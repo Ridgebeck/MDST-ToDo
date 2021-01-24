@@ -1,14 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../layout_frame.dart';
-//import '../util/auth.dart';
+import '../widgets/count_down.dart';
 
 const kTextColor = Colors.white;
-final DateTime theDate = DateTime(2021, 2, 7);
+//final DateTime theDate = DateTime(2021, 2, 7);
 
 class WelcomeScreen extends StatefulWidget {
   @override
@@ -17,31 +15,6 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
   VideoPlayerController _controller;
-  Timer _timer;
-  Map<String, int> _timeDelta;
-
-  Map<String, int> getTimeDelta() {
-    DateTime startDate = DateTime.now();
-    Duration duration = theDate.difference(startDate);
-    int days = duration.inDays;
-    int hours = duration.inHours - days * 24;
-    int minutes = duration.inMinutes - hours * 60 - days * 24 * 60 + 1;
-    return {'days': days, 'hours': hours, 'minutes': minutes};
-  }
-
-  void startTimer() {
-    const oneSec = const Duration(seconds: 10);
-    _timer = Timer.periodic(oneSec, (Timer timer) {
-      if (DateTime.now().isAfter(theDate)) {
-        timer.cancel();
-        print(DateTime.now());
-      } else {
-        setState(() {
-          _timeDelta = getTimeDelta();
-        });
-      }
-    });
-  }
 
   _launchURL() async {
     const url = 'https://www.youtube.com/watch?v=ksrri3TEA3A';
@@ -55,8 +28,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   void initState() {
     super.initState();
-    _timeDelta = getTimeDelta();
-    startTimer();
     _controller = VideoPlayerController.asset('assets/beauties.mp4')
       ..initialize().then((_) {
         // Once the video has been loaded we play the video and set looping to true.
@@ -70,7 +41,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   void dispose() {
     _controller.dispose();
-    _timer.cancel();
+    //_timer.cancel();
     super.dispose();
   }
 
@@ -146,102 +117,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           right: 0.0,
           //width: 500.0,
           //height: 250.0,
-          child: SafeArea(
-            child: Container(
-              padding: EdgeInsets.only(left: 22.0, right: 22.0, top: 27.0),
-              //color: Colors.green,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    children: [
-                      Text(
-                        'noch',
-                        style: TextStyle(color: kTextColor, fontSize: 22.0),
-                      ),
-                      SizedBox(width: 10.0),
-                      Text(
-                        '${_timeDelta['days']}',
-                        style: TextStyle(
-                            color: kTextColor, fontSize: 50.0, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(width: 10.0),
-                      Text(
-                        _timeDelta['days'] > 1 ? 'Tage' : 'Tag',
-                        style: TextStyle(color: kTextColor, fontSize: 40.0),
-                      ),
-                      SizedBox(width: 20.0),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    children: [
-                      Text(
-                        '${_timeDelta['hours']}',
-                        style: TextStyle(
-                            color: kTextColor, fontSize: 45.0, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(width: 10.0),
-                      Text(
-                        _timeDelta['hours'] > 1 ? 'Stunden' : 'Stunde',
-                        style: TextStyle(
-                          color: kTextColor,
-                          fontSize: 35.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    children: [
-                      Text(
-                        'und',
-                        style: TextStyle(color: kTextColor, fontSize: 20.0),
-                      ),
-                      SizedBox(width: 10.0),
-                      Text(
-                        '${_timeDelta['minutes']}',
-                        style: TextStyle(
-                          color: kTextColor,
-                          fontSize: 40.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(width: 10.0),
-                      Text(
-                        _timeDelta['minutes'] > 1 ? 'Minuten' : 'Minute',
-                        style: TextStyle(color: kTextColor, fontSize: 27.0),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      SizedBox(height: 15.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        children: [
-                          Text(
-                            'bis zum',
-                            style: TextStyle(color: kTextColor, fontSize: 22.0),
-                          ),
-                          SizedBox(width: 15.0),
-                          Text(
-                            '#MDST21',
-                            style: TextStyle(
-                                color: kTextColor, fontSize: 50.0, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+          child: showTopWidget(),
         ),
         Positioned(
           right: 40,
@@ -276,4 +152,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       ]),
     );
   }
+}
+
+Widget showTopWidget() {
+  // TODO: select 3 different widgets (before, while, after)
+  return CountDown();
 }

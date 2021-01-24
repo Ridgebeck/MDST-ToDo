@@ -10,12 +10,14 @@ import 'package:percent_indicator/percent_indicator.dart';
 
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 import 'package:implicitly_animated_reorderable_list/transitions.dart';
-import '../util/task_data.dart';
 
-import 'add_task_screen.dart';
 import '../util/box.dart';
 import '../util/task.dart';
+import '../util/task_data.dart';
 import '../constants.dart';
+
+import '../widgets/hourly_progress_bar.dart';
+import 'add_task_screen.dart';
 
 class TaskScreen extends StatefulWidget {
   @override
@@ -31,8 +33,8 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
 
   @override
   void initState() {
-    super.initState();
     scrollController = ScrollController();
+    super.initState();
   }
 
   @override
@@ -58,8 +60,9 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
         ),
         body: Column(
           children: [
+            HourlyProgressBar(),
             Container(
-              height: 30.0,
+              height: 35.0,
               width: double.infinity,
               color: Colors.transparent, //kKliemannBlau.withOpacity(0.8),
               child: Column(
@@ -69,15 +72,15 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
                     widthFactor: 0.9,
                     child: LinearPercentIndicator(
                       //alignment: MainAxisAlignment.center,
-                      lineHeight: 20.0,
-                      backgroundColor: Colors.grey[200],
-                      progressColor: Colors.greenAccent,
+                      lineHeight: 25.0,
+                      backgroundColor: kKliemannGrau, //Colors.grey[200],
+                      progressColor: kKliemannBlau, //Colors.greenAccent,
                       percent: taskData.ratioDone ?? 0,
                       center: Text(
-                        taskData.percentageDone == null
+                        taskData.percentageDone == 0
                             ? "Hier gibt's keinen Kakao"
                             : taskData.percentageDone.toStringAsFixed(1) + ' % erledigt',
-                        style: TextStyle(color: kKliemannGrau),
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
@@ -109,9 +112,9 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
     //final theme = Theme.of(context);
 
     Widget buildReorderable(
-        Task task,
-        Widget Function(Widget tile) transitionBuilder,
-        ) {
+      Task task,
+      Widget Function(Widget tile) transitionBuilder,
+    ) {
       return Reorderable(
         key: ValueKey(task),
         builder: (context, dragAnimation, inDrag) {
@@ -175,81 +178,81 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildTile(double t, Task task, TaskData taskData) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-
+    //final theme = Theme.of(context);
+    //final textTheme = theme.textTheme;
     //final color = Color.lerp(Colors.white, Colors.grey.shade100, t);
+
     final elevation = lerpDouble(0, 8, t);
 
     final List<Widget> doneActions = taskData.activeTasksLength > 0
         ? [
-      SlideAction(
-        closeOnTap: true,
-        decoration: BoxDecoration(
-          color: Colors.green,
-          borderRadius: BorderRadius.all(
-            Radius.circular(15.0),
-          ),
-        ),
-        onTap: () {
-          // deactivate task and move to finished list
-          taskData.moveToFinishedList(task);
-        },
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const Icon(
-                Icons.check,
-                color: Colors.white,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Feddich!',
-                style: textTheme.bodyText2.copyWith(
-                  color: Colors.white,
+            SlideAction(
+              closeOnTap: true,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(15.0),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    ]
+              onTap: () {
+                // deactivate task and move to finished list
+                taskData.moveToFinishedList(task);
+              },
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Feddich!',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ]
         : [];
 
     final List<Widget> deleteActions = taskData.activeTasksLength > 0
         ? [
-      SlideAction(
-        closeOnTap: true,
-        decoration: BoxDecoration(
-          color: Colors.redAccent,
-          borderRadius: BorderRadius.all(
-            Radius.circular(15.0),
-          ),
-        ),
-        onTap: () {
-          taskData.removeTask(task);
-        },
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const Icon(
-                Icons.delete,
-                color: Colors.white,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Wech damit',
-                style: textTheme.bodyText2.copyWith(
-                  color: Colors.white,
+            SlideAction(
+              closeOnTap: true,
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(15.0),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    ]
+              onTap: () {
+                taskData.removeTask(task);
+              },
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Wech damit',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ]
         : [];
 
     return Slidable(
@@ -258,8 +261,9 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
       actionExtentRatio: 0.25,
       secondaryActions: deleteActions,
       child: Box(
-        color:
-        task.isActive ? Colors.greenAccent.withOpacity(0.9) : Colors.grey[200].withOpacity(0.9),
+        color: task.isActive
+            ? kKliemannBlau //Colors.greenAccent.withOpacity(0.9)
+            : kKliemannGrau, //Colors.grey[200].withOpacity(0.9),
         elevation: elevation,
         alignment: Alignment.center,
         borderRadius: 15.0,
@@ -269,14 +273,14 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
           contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
           title: Text(
             task.category + ' + ' + task.activity,
-            style: kTitleStyle,
+            style: task.isActive ? kTitleStyleActive : kTitleStyle,
             textAlign: TextAlign.center,
           ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: kSubtitlePadding),
             child: Text(
               task.subtitle,
-              style: kSubtitleStyle,
+              style: task.isActive ? kSubtitleStyleActive : kSubtitleStyle,
               textAlign: TextAlign.center,
             ),
           ),
@@ -287,20 +291,20 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
                 width: 50.0,
                 height: 50.0,
                 child:
-                // Text(
-                //   '${selectedTasks.indexOf(task) + 1}',
-                //   style: textTheme.bodyText2.copyWith(
-                //     color: kKliemannGrau,
-                //     fontSize: 22,
-                //   ),
-                // ),
+                    // Text(
+                    //   '${selectedTasks.indexOf(task) + 1}',
+                    //   style: textTheme.bodyText2.copyWith(
+                    //     color: kKliemannGrau,
+                    //     fontSize: 22,
+                    //   ),
+                    // ),
 
-                Material(
+                    Material(
                   color: Colors.transparent,
                   child: IconButton(
                     padding: EdgeInsets.all(0.0),
                     icon: task.isActive ? Icon(Icons.pause) : Icon(Icons.play_circle_outline),
-                    color: kKliemannGrau,
+                    color: task.isActive ? Colors.white : kKliemannPink,
                     iconSize: 38.0,
                     splashColor: kKliemannPink,
                     splashRadius: 35.0 / 2,
@@ -319,7 +323,7 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
                 delay: Duration(milliseconds: 100),
                 child: Icon(
                   Icons.reorder_rounded,
-                  color: kKliemannGrau,
+                  color: task.isActive ? Colors.white : kKliemannPink,
                   size: 25.0,
                 ),
               ),

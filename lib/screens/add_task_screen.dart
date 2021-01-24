@@ -49,7 +49,7 @@ class AddTaskScreen extends StatelessWidget {
                           height: 90.0,
                           child: CupertinoPicker(
                             itemExtent: 42,
-                            children: taskData.categoryEmojis,
+                            children: taskData.createCategoryEmojis(),
                             onSelectedItemChanged: (value) {
                               emojiIndex1 = value;
                             },
@@ -78,7 +78,7 @@ class AddTaskScreen extends StatelessWidget {
                           height: 90.0,
                           child: CupertinoPicker(
                             itemExtent: 42,
-                            children: taskData.activityEmojis,
+                            children: taskData.createActivityEmojis(),
                             onSelectedItemChanged: (value) {
                               emojiIndex2 = value;
                             },

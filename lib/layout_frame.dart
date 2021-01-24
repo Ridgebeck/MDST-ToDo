@@ -38,6 +38,7 @@ class _LayoutFrameState extends State<LayoutFrame> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // TODO: remove image?
         Container(
           decoration: BoxDecoration(
             image: DecorationImage(
@@ -53,7 +54,8 @@ class _LayoutFrameState extends State<LayoutFrame> {
           // ),
         ),
         Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor:
+              _selectedIndex == 3 ? kKliemannPink : kKliemannGelb, //Colors.transparent,
           appBar: AppBar(
             automaticallyImplyLeading: false,
             title: Center(

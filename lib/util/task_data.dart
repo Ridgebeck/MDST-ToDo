@@ -8,49 +8,74 @@ import 'shared_prefs.dart';
 
 class TaskData extends ChangeNotifier {
   bool _inReorder = false;
-  List<Task> _activeTasks = sharedPrefs.initTaskListFromLocal(false); //[];
-  List<Task> _finishedTasks = sharedPrefs.initTaskListFromLocal(true); //[];
+  List<Task> _activeTasks = sharedPrefs.initTaskListFromLocal(false);
+  List<Task> _finishedTasks = sharedPrefs.initTaskListFromLocal(true);
+
   //= [
   // Task(category: '🚘', activity: '🔧', subtitle: 'Projekt starten, einfach ▶ klicken'),
   // Task(category: '🏠 ', activity: '🧹', subtitle: 'Kein Bock auf das Projekt? Swipe links ⬅'),
   // Task(category: '👩‍🌾', activity: '🌻', subtitle: 'Neues Projekt? Einfach das ➕ druecken'),
   //];
 
-  final List<Text> _categoryEmojis = const [
-    Text('🏠', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🚿', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('💡', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🔌', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🪑', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('💻', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🚗', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🚲', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🏍', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('⛵', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🌳', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🌻', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🐕', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('⚽', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🎵', style: TextStyle(fontSize: kEmojiTextSize)),
+  static List<String> _categoryStringList = [
+    '🏠',
+    '🚿',
+    '💡',
+    '🔌',
+    '🪑',
+    '💻',
+    '🚗',
+    '🚲',
+    '🏍',
+    '⛵',
+    '🌳',
+    '🌻',
+    '🐕',
+    '⚽',
+    '🎵',
   ];
 
-  final List<Text> _activityEmojis = const [
-    Text('🛠', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🧹', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('✂', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🆕', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('💰', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🎨', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🛒', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('📦', style: TextStyle(fontSize: kEmojiTextSize)),
-    Text('🎁', style: TextStyle(fontSize: kEmojiTextSize)),
+  static List<String> _activityStringList = [
+    '🛠',
+    '🧹',
+    '✂',
+    '🆕',
+    '💰',
+    '🎨',
+    '🛒',
+    '📦',
+    '🎁',
   ];
+
+  List<Text> createCategoryEmojis() {
+    return createTextWidgetList(_categoryStringList);
+  }
+
+  List<Text> createActivityEmojis() {
+    return createTextWidgetList(_activityStringList);
+  }
+
+  List<Text> createTextWidgetList(List<String> stringList) {
+    List<Text> textList = [];
+    for (String entry in stringList) {
+      textList.add(
+        Text(
+          entry,
+          style: TextStyle(
+            fontSize: kEmojiTextSize,
+          ),
+        ),
+      );
+    }
+    return textList;
+  }
 
   void moveToFinishedList(Task task) {
     toggleActivity(task);
     _activeTasks.remove(task);
     _finishedTasks.add(task);
     saveTaskListToLocal(true);
+    saveTaskListToLocal(false);
     notifyListeners();
   }
 
@@ -118,8 +143,8 @@ class TaskData extends ChangeNotifier {
 
   void addTask({int emojiIndex1, int emojiIndex2, String subtitle}) {
     final task = Task(
-        category: categoryEmojis[emojiIndex1].data,
-        activity: activityEmojis[emojiIndex2].data,
+        category: _categoryStringList[emojiIndex1],
+        activity: _activityStringList[emojiIndex2],
         subtitle: subtitle);
     _activeTasks.add(task);
     print('task added');
@@ -182,13 +207,13 @@ class TaskData extends ChangeNotifier {
     return UnmodifiableListView(_activeTasks);
   }
 
-  UnmodifiableListView<Text> get categoryEmojis {
-    return UnmodifiableListView(_categoryEmojis);
-  }
-
-  UnmodifiableListView<Text> get activityEmojis {
-    return UnmodifiableListView(_activityEmojis);
-  }
+  // UnmodifiableListView<Text> get categoryEmojis {
+  //   return UnmodifiableListView(_categoryEmojis);
+  // }
+  //
+  // UnmodifiableListView<Text> get activityEmojis {
+  //   return UnmodifiableListView(_activityEmojis);
+  // }
 
   int get activeTasksLength {
     return _activeTasks.length;
@@ -200,7 +225,7 @@ class TaskData extends ChangeNotifier {
 
   double get percentageDone {
     if (_finishedTasks.length + _activeTasks.length == 0) {
-      return null;
+      return 0;
     } else {
       return 100 * _finishedTasks.length / (_finishedTasks.length + _activeTasks.length);
     }
@@ -208,8 +233,9 @@ class TaskData extends ChangeNotifier {
 
   double get ratioDone {
     if (_finishedTasks.length + _activeTasks.length == 0) {
-      return null;
+      return 0;
     } else {
+      //print(ratioDone);
       return _finishedTasks.length / (_finishedTasks.length + _activeTasks.length);
     }
   }

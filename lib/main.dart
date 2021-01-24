@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/loading_screen.dart';
 import 'screens/error_screen.dart';
-
+import 'package:flutter/services.dart';
 import 'util/task_data.dart';
+import 'util/timers.dart';
 import 'util/shared_prefs.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -19,7 +20,10 @@ class MyApp extends StatelessWidget {
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
   @override
   Widget build(BuildContext context) {
-    // TODO: prevent screen rotation
+    // TODO: check if screen rotation lock works on iOS
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     // SystemChrome.setSystemUIOverlayStyle(
     //   const SystemUiOverlayStyle(
     //     statusBarColor: Colors.transparent,
@@ -37,17 +41,20 @@ class MyApp extends StatelessWidget {
 
         // Once complete, show your application
         if (snapshot.connectionState == ConnectionState.done) {
-          return ChangeNotifierProvider(
-            create: (context) {
-              TaskData myTaskData = TaskData();
-              return myTaskData;
-            },
+          return MultiProvider(
+            providers: [
+              ChangeNotifierProvider(create: (_) => TaskData()),
+              ChangeNotifierProvider(create: (_) => BeforeTimer()),
+              ChangeNotifierProvider(create: (_) => MDSTTimer()),
+            ],
+            //child:
             child: MaterialApp(
               title: 'MDST_todo',
               theme: ThemeData(canvasColor: Colors.transparent),
               debugShowCheckedModeBanner: false,
               home: WelcomeScreen(),
             ),
+            //),
           );
         }
 
