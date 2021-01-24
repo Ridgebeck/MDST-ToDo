@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../util/task_data.dart';
 import '../util/timers.dart';
 
-class HourlyProgressBar extends StatelessWidget {
+class HourlyCountdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<MDSTTimer>(builder: (context, mdstTimer, child) {
@@ -12,7 +13,11 @@ class HourlyProgressBar extends StatelessWidget {
         color: Colors.transparent,
         child: FractionallySizedBox(
           widthFactor: 0.9,
-          child: Center(child: returnTextWidget(mdstTimer.minutesRatio, mdstTimer.timeDelta)),
+          child: Center(
+              child: returnTextWidget(
+            mdstTimer.minutesRatio,
+            mdstTimer.timeDelta,
+          )),
         ),
       );
     });

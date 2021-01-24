@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -6,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 
 import 'package:implicitly_animated_reorderable_list/implicitly_animated_reorderable_list.dart';
 import 'package:implicitly_animated_reorderable_list/transitions.dart';
@@ -16,8 +14,12 @@ import '../util/task.dart';
 import '../util/task_data.dart';
 import '../constants.dart';
 
-import '../widgets/hourly_progress_bar.dart';
 import 'add_task_screen.dart';
+
+import '../widgets/hourly_countdown.dart';
+import '../widgets/progress_bar.dart';
+import '../widgets/task_tile.dart';
+import '../widgets/slide_widget.dart';
 
 class TaskScreen extends StatefulWidget {
   @override
@@ -60,33 +62,8 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
         ),
         body: Column(
           children: [
-            HourlyProgressBar(),
-            Container(
-              height: 35.0,
-              width: double.infinity,
-              color: Colors.transparent, //kKliemannBlau.withOpacity(0.8),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FractionallySizedBox(
-                    widthFactor: 0.9,
-                    child: LinearPercentIndicator(
-                      //alignment: MainAxisAlignment.center,
-                      lineHeight: 25.0,
-                      backgroundColor: kKliemannGrau, //Colors.grey[200],
-                      progressColor: kKliemannBlau, //Colors.greenAccent,
-                      percent: taskData.ratioDone ?? 0,
-                      center: Text(
-                        taskData.percentageDone == 0
-                            ? "Hier gibt's keinen Kakao"
-                            : taskData.percentageDone.toStringAsFixed(1) + ' % erledigt',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            HourlyCountdown(),
+            ProgressBar(taskData: taskData),
             Expanded(
               child: ListView(
                 controller: scrollController,
@@ -186,71 +163,26 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
 
     final List<Widget> doneActions = taskData.activeTasksLength > 0
         ? [
-            SlideAction(
-              closeOnTap: true,
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(15.0),
-                ),
-              ),
-              onTap: () {
-                // deactivate task and move to finished list
+            SlideWidget(
+              boxColor: Colors.green,
+              text: 'Feddich',
+              iconData: Icons.check,
+              onTapFunction: () {
                 taskData.moveToFinishedList(task);
               },
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Feddich!',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ]
         : [];
 
     final List<Widget> deleteActions = taskData.activeTasksLength > 0
         ? [
-            SlideAction(
-              closeOnTap: true,
-              decoration: BoxDecoration(
-                color: Colors.redAccent,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(15.0),
-                ),
-              ),
-              onTap: () {
+            SlideWidget(
+              boxColor: Colors.redAccent,
+              text: 'Wech damit',
+              iconData: Icons.delete,
+              onTapFunction: () {
                 taskData.removeTask(task);
               },
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    const Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Wech damit',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ]
         : [];
@@ -269,67 +201,7 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
         borderRadius: 15.0,
         // TODO: Convert to own Widget of rows
         // instead of ListTile
-        child: ListTile(
-          contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-          title: Text(
-            task.category + ' + ' + task.activity,
-            style: task.isActive ? kTitleStyleActive : kTitleStyle,
-            textAlign: TextAlign.center,
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: kSubtitlePadding),
-            child: Text(
-              task.subtitle,
-              style: task.isActive ? kSubtitleStyleActive : kSubtitleStyle,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          leading: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 50.0,
-                height: 50.0,
-                child:
-                    // Text(
-                    //   '${selectedTasks.indexOf(task) + 1}',
-                    //   style: textTheme.bodyText2.copyWith(
-                    //     color: kKliemannGrau,
-                    //     fontSize: 22,
-                    //   ),
-                    // ),
-
-                    Material(
-                  color: Colors.transparent,
-                  child: IconButton(
-                    padding: EdgeInsets.all(0.0),
-                    icon: task.isActive ? Icon(Icons.pause) : Icon(Icons.play_circle_outline),
-                    color: task.isActive ? Colors.white : kKliemannPink,
-                    iconSize: 38.0,
-                    splashColor: kKliemannPink,
-                    splashRadius: 35.0 / 2,
-                    onPressed: () {
-                      taskData.toggleActivity(task);
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-          trailing: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Handle(
-                delay: Duration(milliseconds: 100),
-                child: Icon(
-                  Icons.reorder_rounded,
-                  color: task.isActive ? Colors.white : kKliemannPink,
-                  size: 25.0,
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: TodoTile(taskData: taskData, task: task),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:MDST_todo/util/timers.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -11,7 +12,8 @@ final DateTime endDate = DateTime(2021, 2, 8);
 class AnalyticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer<TaskData>(builder: (context, taskData, child) {
+    return Consumer2<TaskData, MDSTTimer>(builder: (context, taskData, mdstTimer, child) {
+      taskData.updateTaskTime();
       return Column(
         children: [
           Padding(
@@ -24,7 +26,7 @@ class AnalyticsScreen extends StatelessWidget {
               height: 50.0,
               child: Center(
                 child: Text(
-                  'Deine Stats',
+                  'Was du geschafft hast',
                   style: TextStyle(
                     fontSize: 25.0,
                     fontWeight: FontWeight.bold,
@@ -46,10 +48,11 @@ class AnalyticsScreen extends StatelessWidget {
                 )), // AnalyticsCard(CircularIndicator())),
                 Expanded(
                     child: AnalyticsTextBox(
-                  title: 'Gesamtzeit',
+                  title: 'Insgesamt',
                   emoji: '💪',
-                  subtitle: '5h 21 min geschuftet',
-                )), //AnalyticsCard(TotalUsers())),
+                  subtitle: '${taskData.totalTime['hours']} Minuten und '
+                      '${taskData.totalTime['minutes']} Sekunden geschuftet',
+                )),
               ],
             ),
           ),
@@ -60,14 +63,14 @@ class AnalyticsScreen extends StatelessWidget {
                 Expanded(
                     child: AnalyticsTextBox(
                   title: 'Top Kategorie',
-                  emoji: '🏠',
-                  subtitle: '210 min',
+                  emoji: taskData.topCategory.keys.first,
+                  subtitle: '${taskData.topCategory.values.first.inMinutes.toString()} Minuten',
                 )),
                 Expanded(
                     child: AnalyticsTextBox(
                   title: 'Top Aktivität',
-                  emoji: '🛠',
-                  subtitle: '150 min',
+                  emoji: taskData.topActivity.keys.first,
+                  subtitle: '${taskData.topActivity.values.first.inMinutes.toString()} Minuten',
                 )),
               ],
             ),

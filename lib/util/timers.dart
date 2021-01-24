@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:MDST_todo/util/task_data.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 const kTimerTickRate = 10;
 
@@ -8,7 +10,6 @@ class MDSTTimer extends ChangeNotifier {
     // start timer when class gets initialized
     // by provider at app startup
     timerCallback(_timer);
-    // TODO: set tick rate to 1 minute
     _startTimer(kTimerTickRate);
   }
   final DateTime endDate = DateTime(2021, 1, 24);
@@ -30,11 +31,12 @@ class MDSTTimer extends ChangeNotifier {
     if (DateTime.now().isAfter(endDate)) {
       // TODO: what is displayed at end?
       _minutesRatio = 1.0;
-      timer.cancel();
+      //timer.cancel();
     } else if (DateTime.now().isBefore(mdstStartDate)) {
       // TODO: what is displayed before MDST starts?
       _minutesRatio = 0.0;
     } else {
+      //updateTaskTime();
       _timeDelta = getTimeDelta(endDate);
       _minutesRatio = 1 - (endDate.difference(DateTime.now()).inMinutes / (24 * 60));
     }
@@ -91,7 +93,7 @@ class BeforeTimer extends ChangeNotifier {
     return _timeDelta;
   }
 
-  // TODO: dipose timer when app is closed???
+  // TODO: dispose timer when app is closed???
   void cancelTimer(Timer timer) {
     _timer.cancel();
   }

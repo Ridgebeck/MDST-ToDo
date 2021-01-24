@@ -11,11 +11,16 @@ class TaskData extends ChangeNotifier {
   List<Task> _activeTasks = sharedPrefs.initTaskListFromLocal(false);
   List<Task> _finishedTasks = sharedPrefs.initTaskListFromLocal(true);
 
-  //= [
-  // Task(category: '🚘', activity: '🔧', subtitle: 'Projekt starten, einfach ▶ klicken'),
-  // Task(category: '🏠 ', activity: '🧹', subtitle: 'Kein Bock auf das Projekt? Swipe links ⬅'),
-  // Task(category: '👩‍🌾', activity: '🌻', subtitle: 'Neues Projekt? Einfach das ➕ druecken'),
-  //];
+  void updateTaskTime() {
+    for (Task task in _activeTasks) {
+      if (task.isActive) {
+        // track time since last time it was activated
+        DateTime now = DateTime.now();
+        task.totalTime += now.difference(task.lastStartTime);
+        task.lastStartTime = now;
+      }
+    }
+  }
 
   static List<String> _categoryStringList = [
     '🏠',
@@ -108,7 +113,6 @@ class TaskData extends ChangeNotifier {
     } catch (e) {
       print(e);
     }
-    print('task list saved locally');
   }
 
   void readTaskListFromLocal(bool finished) {
@@ -146,27 +150,22 @@ class TaskData extends ChangeNotifier {
         category: _categoryStringList[emojiIndex1],
         activity: _activityStringList[emojiIndex2],
         subtitle: subtitle);
+
     _activeTasks.add(task);
-    print('task added');
     saveTaskListToLocal(false);
     notifyListeners();
   }
 
   void toggleActivity(Task task) {
-    const String slideMessage = '\n\n swipe ➡ wenn feddich';
     if (task.isActive) {
       // track time since last time it was activated
       Duration difference = DateTime.now().difference(task.lastStartTime);
       task.totalTime += difference;
-      print(difference);
-      print(task.totalTime);
-      // remove info message from subtitle
-      task.subtitle = task.subtitle.substring(0, task.subtitle.length - slideMessage.length);
+      task.infoText = playMessage;
     } else {
       // set new start time for task
       task.lastStartTime = DateTime.now();
-      // add info message when set active
-      task.subtitle += slideMessage;
+      task.infoText = slideMessage;
     }
     // toggle active property
     task.isActive = !task.isActive;
@@ -177,8 +176,6 @@ class TaskData extends ChangeNotifier {
 
   void removeTask(Task task) {
     _activeTasks.remove(task);
-    print('task removed');
-    print(_activeTasks.length);
     saveTaskListToLocal(false);
     notifyListeners();
   }
@@ -223,6 +220,83 @@ class TaskData extends ChangeNotifier {
     return _finishedTasks.length;
   }
 
+  Map<String, int> get totalTime {
+    Duration sumDuration = Duration(minutes: 0);
+    for (Task task in _activeTasks) {
+      sumDuration += task.totalTime;
+    }
+    for (Task task in _finishedTasks) {
+      sumDuration += task.totalTime;
+    }
+    int hours = sumDuration.inMinutes;
+    int minutes = sumDuration.inSeconds - hours * 60;
+    return {'hours': hours, 'minutes': minutes};
+  }
+
+  Map<String, Duration> get topCategory {
+    // create map with category emoji and time
+    Map<String, Duration> categoryDuration = {};
+    if (_activeTasks.length == 0 && _finishedTasks.length == 0) {
+      return {'🤷‍♀': Duration(minutes: 0)};
+    } else {
+      for (Task task in _activeTasks) {
+        if (categoryDuration.containsKey(task.category)) {
+          categoryDuration[task.category] += task.totalTime;
+        } else {
+          categoryDuration[task.category] = task.totalTime;
+        }
+      }
+      for (Task task in _finishedTasks) {
+        if (categoryDuration.containsKey(task.category)) {
+          categoryDuration[task.category] += task.totalTime;
+        } else {
+          categoryDuration[task.category] = task.totalTime;
+        }
+      }
+      Duration maxDuration = Duration(minutes: 0);
+      String topEmoji;
+      categoryDuration.forEach((emoji, duration) {
+        if (duration >= maxDuration) {
+          topEmoji = emoji;
+          maxDuration = duration;
+        }
+      });
+      return {topEmoji: maxDuration};
+    }
+  }
+
+  Map<String, Duration> get topActivity {
+    // create map with category emoji and time
+    Map<String, Duration> activityDuration = {};
+    if (_activeTasks.length == 0 && _finishedTasks.length == 0) {
+      return {'🤷‍♂': Duration(minutes: 0)};
+    } else {
+      for (Task task in _activeTasks) {
+        if (activityDuration.containsKey(task.activity)) {
+          activityDuration[task.activity] += task.totalTime;
+        } else {
+          activityDuration[task.activity] = task.totalTime;
+        }
+      }
+      for (Task task in _finishedTasks) {
+        if (activityDuration.containsKey(task.activity)) {
+          activityDuration[task.activity] += task.totalTime;
+        } else {
+          activityDuration[task.activity] = task.totalTime;
+        }
+      }
+      Duration maxDuration = Duration(minutes: 0);
+      String topEmoji;
+      activityDuration.forEach((emoji, duration) {
+        if (duration >= maxDuration) {
+          topEmoji = emoji;
+          maxDuration = duration;
+        }
+      });
+      return {topEmoji: maxDuration};
+    }
+  }
+
   double get percentageDone {
     if (_finishedTasks.length + _activeTasks.length == 0) {
       return 0;
@@ -235,7 +309,6 @@ class TaskData extends ChangeNotifier {
     if (_finishedTasks.length + _activeTasks.length == 0) {
       return 0;
     } else {
-      //print(ratioDone);
       return _finishedTasks.length / (_finishedTasks.length + _activeTasks.length);
     }
   }

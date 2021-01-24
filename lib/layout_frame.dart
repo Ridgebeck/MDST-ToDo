@@ -39,20 +39,7 @@ class _LayoutFrameState extends State<LayoutFrame> {
     return Stack(
       children: [
         // TODO: remove image?
-        Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/camouflage.jpg'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          // child: BackdropFilter(
-          //   filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-          //   child: Container(
-          //     color: Colors.transparent,
-          //   ),
-          // ),
-        ),
+
         Scaffold(
           backgroundColor:
               _selectedIndex == 3 ? kKliemannPink : kKliemannGelb, //Colors.transparent,
@@ -60,8 +47,9 @@ class _LayoutFrameState extends State<LayoutFrame> {
             automaticallyImplyLeading: false,
             title: Center(
                 child: const Text(
-              '💩 MDST 2021 💩',
-              style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.bold, color: Colors.white),
+              'MDST 2021 \nEin Tag. Viel zu tun. Los gehts.',
+              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
+              textAlign: TextAlign.center,
             )),
             backgroundColor: Colors.transparent,
             elevation: 0.0,

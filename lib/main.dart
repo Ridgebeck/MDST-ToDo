@@ -46,6 +46,11 @@ class MyApp extends StatelessWidget {
               ChangeNotifierProvider(create: (_) => TaskData()),
               ChangeNotifierProvider(create: (_) => BeforeTimer()),
               ChangeNotifierProvider(create: (_) => MDSTTimer()),
+              // ProxyProvider<MDSTTimer, TaskData>(
+              //     update: (context, MDSTTimer mdstTimer, TaskData taskData) {
+              //   print('Proxy Provider in action!');
+              //   return TaskData();
+              // }),
             ],
             //child:
             child: MaterialApp(
