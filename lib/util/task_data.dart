@@ -174,9 +174,15 @@ class TaskData extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeTask(Task task) {
+  void removeActiveTask(Task task) {
     _activeTasks.remove(task);
     saveTaskListToLocal(false);
+    notifyListeners();
+  }
+
+  void removeFinishedTask(Task task) {
+    _finishedTasks.remove(task);
+    saveTaskListToLocal(true);
     notifyListeners();
   }
 
@@ -228,8 +234,8 @@ class TaskData extends ChangeNotifier {
     for (Task task in _finishedTasks) {
       sumDuration += task.totalTime;
     }
-    int hours = sumDuration.inMinutes;
-    int minutes = sumDuration.inSeconds - hours * 60;
+    int hours = sumDuration.inHours;
+    int minutes = sumDuration.inMinutes - hours * 60;
     return {'hours': hours, 'minutes': minutes};
   }
 

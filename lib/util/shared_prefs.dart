@@ -49,7 +49,7 @@ class SharedPrefs {
   List<Task> initTaskListFromLocal(bool finished) {
     List<Task> tempTaskList = [];
     // for debug resetting
-    clear();
+    //clear();
 
     try {
       List<String> stringList = finished

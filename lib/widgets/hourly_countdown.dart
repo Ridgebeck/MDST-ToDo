@@ -27,9 +27,9 @@ class HourlyCountdown extends StatelessWidget {
 Text returnTextWidget(double minutesRatio, Map<String, int> timeDelta) {
   // TODO: define three possible display options
   if (minutesRatio == 0.0) {
-    return Text('Text before');
+    return Text('Bald gehts los');
   } else if (minutesRatio == 1.0) {
-    return Text('Text after');
+    return Text('Gut wars! Bis nächstes Jahr');
   } else if (minutesRatio == null) {
     return Text('Text null');
   } else {

@@ -18,7 +18,7 @@ import 'add_task_screen.dart';
 
 import '../widgets/hourly_countdown.dart';
 import '../widgets/progress_bar.dart';
-import '../widgets/task_tile.dart';
+import '../widgets/todo_tile.dart';
 import '../widgets/slide_widget.dart';
 
 class TaskScreen extends StatefulWidget {
@@ -60,26 +60,72 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
             );
           },
         ),
-        body: Column(
-          children: [
-            HourlyCountdown(),
-            ProgressBar(taskData: taskData),
-            Expanded(
-              child: ListView(
-                controller: scrollController,
-                // Prevent the ListView from scrolling when an item is
-                // currently being dragged.
-                physics: taskData.inReorder ? const NeverScrollableScrollPhysics() : null,
-                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
-                children: <Widget>[
-                  _buildVerticalTaskList(taskData),
-                  // TODO: delete box when not needed
-                  const SizedBox(height: 1000),
+        body: taskData.activeTasksLength == 0 && taskData.finishedTasksLength == 0
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      //crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Text(
+                            'Wie, noch keine Projekte??!!',
+                            style: TextStyle(color: kKliemannGrau, fontSize: 35),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Container(
+                          height: 260.0,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage('assets/notasks.gif'),
+                              fit: BoxFit.fitWidth,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Text(
+                            'Nee neee neee. Jetzt aber mal schnell starten.',
+                            style: TextStyle(color: kKliemannGrau, fontSize: 30),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        //Image.asset('assets/notasks.gif'),
+                      ],
+                    ),
+                  ),
+                  Container(
+                      height: 65.0,
+                      child: Text(
+                        '👉 👉🏼 👉🏿',
+                        style: TextStyle(fontSize: 40.0),
+                      )),
+                ],
+              )
+            : Column(
+                children: [
+                  HourlyCountdown(),
+                  ProgressBar(taskData: taskData),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      // Prevent the ListView from scrolling when an item is
+                      // currently being dragged.
+                      physics: taskData.inReorder ? const NeverScrollableScrollPhysics() : null,
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
+                      children: <Widget>[
+                        _buildVerticalTaskList(taskData),
+                        // TODO: delete box when not needed
+                        //const SizedBox(height: 1000),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
-        ),
       );
     });
   }
@@ -159,49 +205,44 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
     //final textTheme = theme.textTheme;
     //final color = Color.lerp(Colors.white, Colors.grey.shade100, t);
 
-    final elevation = lerpDouble(0, 8, t);
+    //final elevation = lerpDouble(0, 8, t);
 
-    final List<Widget> doneActions = taskData.activeTasksLength > 0
-        ? [
-            SlideWidget(
-              boxColor: Colors.green,
-              text: 'Feddich',
-              iconData: Icons.check,
-              onTapFunction: () {
-                taskData.moveToFinishedList(task);
-              },
-            ),
-          ]
-        : [];
+    final List<Widget> doneActions = [
+      SlideWidget(
+        boxColor: Colors.green,
+        text: 'Feddich',
+        iconData: Icons.check,
+        onTapFunction: () {
+          taskData.moveToFinishedList(task);
+        },
+      ),
+    ];
 
-    final List<Widget> deleteActions = taskData.activeTasksLength > 0
-        ? [
-            SlideWidget(
-              boxColor: Colors.redAccent,
-              text: 'Wech damit',
-              iconData: Icons.delete,
-              onTapFunction: () {
-                taskData.removeTask(task);
-              },
-            ),
-          ]
-        : [];
+    final List<Widget> deleteActions = [
+      SlideWidget(
+        boxColor: Colors.redAccent,
+        text: 'Wech damit',
+        iconData: Icons.delete,
+        onTapFunction: () {
+          taskData.removeActiveTask(task);
+        },
+      ),
+    ];
 
     return Slidable(
       actionPane: const SlidableBehindActionPane(),
       actions: task.isActive ? doneActions : [],
       actionExtentRatio: 0.25,
       secondaryActions: deleteActions,
-      child: Box(
-        color: task.isActive
-            ? kKliemannBlau //Colors.greenAccent.withOpacity(0.9)
-            : kKliemannGrau, //Colors.grey[200].withOpacity(0.9),
-        elevation: elevation,
-        alignment: Alignment.center,
-        borderRadius: 15.0,
-        // TODO: Convert to own Widget of rows
-        // instead of ListTile
-        child: TodoTile(taskData: taskData, task: task),
+      child: TodoTile(
+        task: task,
+        leading: PlayButton(task: task, taskData: taskData),
+        trailing: HandleIcon(task: task),
+        bottom: Text(
+          task.infoText,
+          style: task.isActive ? kInfoTextStyleActive : kInfoTextStyle,
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
@@ -210,5 +251,54 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
   void dispose() {
     scrollController.dispose();
     super.dispose();
+  }
+}
+
+class PlayButton extends StatelessWidget {
+  PlayButton({
+    @required this.taskData,
+    @required this.task,
+  });
+
+  final TaskData taskData;
+  final Task task;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipOval(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            taskData.toggleActivity(task);
+          },
+          splashColor: task.isActive ? kActiveColor : kInactiveColor,
+          child: Icon(
+            task.isActive ? Icons.pause : Icons.play_circle_outline,
+            size: kLeadingIconSize,
+            color: task.isActive ? kActiveColor : kInactiveColor,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HandleIcon extends StatelessWidget {
+  HandleIcon({
+    @required this.task,
+  });
+  final Task task;
+
+  @override
+  Widget build(BuildContext context) {
+    return Handle(
+      delay: Duration(milliseconds: 100),
+      child: Icon(
+        Icons.reorder_rounded,
+        size: 40.0,
+        color: task.isActive ? kActiveColor : kInactiveColor,
+      ),
+    );
   }
 }

@@ -21,14 +21,16 @@ class ProgressBar extends StatelessWidget {
             child: LinearPercentIndicator(
               //alignment: MainAxisAlignment.center,
               lineHeight: 25.0,
-              backgroundColor: kKliemannGrau, //Colors.grey[200],
-              progressColor: kKliemannBlau, //Colors.greenAccent,
+              backgroundColor: kKliemannGrau.withOpacity(0.2),
+              progressColor: Colors.white.withOpacity(0.8),
               percent: taskData.ratioDone ?? 0,
               center: Text(
                 taskData.percentageDone == 0
-                    ? "Hier gibt's keinen Kakao"
+                    ? "Hier gibt's (noch) keinen Kakao"
                     : taskData.percentageDone.toStringAsFixed(1) + ' % erledigt',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: kKliemannGrau,
+                ), //fontWeight: FontWeight.bold),
               ),
             ),
           ),

@@ -12,8 +12,8 @@ class MDSTTimer extends ChangeNotifier {
     timerCallback(_timer);
     _startTimer(kTimerTickRate);
   }
-  final DateTime endDate = DateTime(2021, 1, 24);
-  final DateTime mdstStartDate = DateTime(2021, 1, 23);
+  final DateTime endDate = DateTime(2021, 1, 25);
+  final DateTime mdstStartDate = DateTime(2021, 1, 24);
   Timer _timer;
   Map<String, int> _timeDelta;
   double _minutesRatio;

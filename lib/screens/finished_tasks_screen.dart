@@ -1,50 +1,94 @@
+import 'package:MDST_todo/widgets/todo_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import '../util/task_data.dart';
+import '../util/task.dart';
 import '../constants.dart';
+import '../widgets/slide_widget.dart';
 
 class FinishedTasksScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<TaskData>(builder: (context, taskData, child) {
-      return ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
-        separatorBuilder: (context, index) => SizedBox(
-          height: 10.0,
-        ),
-        itemBuilder: (context, index) {
-          final finishedTask = taskData.finishedTasks[index];
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(15.0),
-            child: ListTile(
-              tileColor: Colors.grey[200].withOpacity(0.9),
-              contentPadding: EdgeInsets.all(20.0),
-              leading: Icon(
-                Icons.check,
-                size: 35.0,
-                color: kKliemannGrau,
-              ),
-              title: Text(
-                finishedTask.category + ' + ' + finishedTask.activity,
-                style: kTitleStyle,
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: kSubtitlePadding),
-                child: Text(
-                  finishedTask.subtitle,
-                  style: kSubtitleStyle,
-                ),
-              ),
-              trailing: Text(
-                //'51 mins',
-                '${finishedTask.totalTime.inSeconds} Sekunden',
-                style: TextStyle(fontSize: 17.0),
+      if (taskData.finishedTasksLength == 0) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          //crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Text(
+                'Das erste Projekt ist immer das schwerste',
+                style: TextStyle(color: kKliemannGrau, fontSize: 35),
+                textAlign: TextAlign.center,
               ),
             ),
-          );
-        },
-        itemCount: taskData.finishedTasksLength,
-      );
+            Container(
+              height: 260.0,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/motivation.gif'),
+                  fit: BoxFit.fitWidth,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Text(
+                'Kleiner Tip: Einfach machen. 💡',
+                style: TextStyle(color: kKliemannGrau, fontSize: 30),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            //Image.asset('assets/notasks.gif'),
+          ],
+        );
+      } else {
+        return ListView.separated(
+          //reverse: true,
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
+          separatorBuilder: (context, index) => SizedBox(
+            height: 10.0,
+          ),
+          itemBuilder: (context, index) {
+            final List<Task> reverseList = taskData.finishedTasks.reversed.toList();
+            final Task finishedTask = reverseList[index];
+
+            final List<Widget> deleteActions = [
+              SlideWidget(
+                boxColor: Colors.redAccent,
+                text: 'Wech damit',
+                iconData: Icons.delete,
+                onTapFunction: () {
+                  taskData.removeFinishedTask(finishedTask);
+                },
+              ),
+            ];
+
+            return Slidable(
+              actionPane: const SlidableBehindActionPane(),
+              //actions: finishedTask.isActive ? deleteActions : [],
+              actionExtentRatio: 0.25,
+              secondaryActions: deleteActions,
+              child: TodoTile(
+                task: finishedTask,
+                leading: Icon(
+                  Icons.check_circle_outline,
+                  size: kLeadingIconSize,
+                  color: kInactiveColor,
+                ),
+                trailing: Text(
+                  '${finishedTask.totalTime.inMinutes} min',
+                  style: TextStyle(color: kInactiveColor),
+                ),
+                bottom: Text(''),
+              ),
+            );
+          },
+          itemCount: taskData.finishedTasksLength,
+        );
+      }
     });
   }
 }

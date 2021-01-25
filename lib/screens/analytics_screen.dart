@@ -50,8 +50,8 @@ class AnalyticsScreen extends StatelessWidget {
                     child: AnalyticsTextBox(
                   title: 'Insgesamt',
                   emoji: '💪',
-                  subtitle: '${taskData.totalTime['hours']} Minuten und '
-                      '${taskData.totalTime['minutes']} Sekunden geschuftet',
+                  subtitle: '${taskData.totalTime['hours']} Stunden und '
+                      '${taskData.totalTime['minutes']} Minuten geschuftet',
                 )),
               ],
             ),

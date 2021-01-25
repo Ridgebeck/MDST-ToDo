@@ -39,5 +39,6 @@ const kInfoTextStyleActive = TextStyle(
 
 const kSubtitlePadding = 15.0;
 const double kEmojiTextSize = 35.0;
+const double kLeadingIconSize = 45.0;
 const String slideMessage = 'swipe 👉 wenn feddich';
 const String playMessage = 'drück ▶ um zu starten \n swipe 👈 zum 🗑';
