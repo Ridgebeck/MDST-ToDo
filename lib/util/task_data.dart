@@ -10,6 +10,22 @@ class TaskData extends ChangeNotifier {
   bool _inReorder = false;
   List<Task> _activeTasks = sharedPrefs.initTaskListFromLocal(false);
   List<Task> _finishedTasks = sharedPrefs.initTaskListFromLocal(true);
+  DateTime _currentTasksDateTime = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+    DateTime.now().hour,
+    DateTime.now().minute,
+  );
+
+  void checkForNextDay() {
+    DateTime now = DateTime.now();
+    now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
+    if (now.isAfter(_currentTasksDateTime)) {
+      print('A NEW MINUTE!');
+      _currentTasksDateTime = now;
+    }
+  }
 
   void updateTaskTime() {
     for (Task task in _activeTasks) {
@@ -82,6 +98,7 @@ class TaskData extends ChangeNotifier {
     saveTaskListToLocal(true);
     saveTaskListToLocal(false);
     notifyListeners();
+    print(task.originalStartTime);
   }
 
   void saveTaskListToLocal(bool finished) {
@@ -98,6 +115,8 @@ class TaskData extends ChangeNotifier {
         'activity': task.activity,
         'subtitle': task.subtitle,
         'totalTime': task.totalTime.inSeconds,
+        'originalStartTime':
+            task.originalStartTime == null ? null : task.originalStartTime.toIso8601String(),
         'lastStartTime': task.lastStartTime == null ? null : task.lastStartTime.toIso8601String(),
         'isActive': task.isActive,
         'isDone': task.isDone,
@@ -132,6 +151,9 @@ class TaskData extends ChangeNotifier {
         Task task = Task(category: jsonMap['category'], activity: jsonMap['activity']);
         task.subtitle = jsonMap['subtitle'];
         task.totalTime = Duration(seconds: jsonMap['totalTime']);
+        jsonMap['originalStartTime'] == null
+            ? task.originalStartTime = null
+            : task.originalStartTime = DateTime.parse(jsonMap['originalStartTime']);
         jsonMap['lastStartTime'] == null
             ? task.lastStartTime = null
             : task.lastStartTime = DateTime.parse(jsonMap['lastStartTime']);
@@ -146,10 +168,16 @@ class TaskData extends ChangeNotifier {
   }
 
   void addTask({int emojiIndex1, int emojiIndex2, String subtitle}) {
+    if (_activeTasks.length == 0 && finishedTasks.length == 0) {
+      _currentTasksDateTime = DateTime.now();
+    }
+
     final task = Task(
-        category: _categoryStringList[emojiIndex1],
-        activity: _activityStringList[emojiIndex2],
-        subtitle: subtitle);
+      category: _categoryStringList[emojiIndex1],
+      activity: _activityStringList[emojiIndex2],
+      subtitle: subtitle,
+      originalStartTime: DateTime.now(),
+    );
 
     _activeTasks.add(task);
     saveTaskListToLocal(false);

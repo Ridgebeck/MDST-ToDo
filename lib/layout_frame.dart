@@ -38,8 +38,6 @@ class _LayoutFrameState extends State<LayoutFrame> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // TODO: remove image?
-
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

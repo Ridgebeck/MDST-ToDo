@@ -12,10 +12,12 @@ class MDSTTimer extends ChangeNotifier {
     timerCallback(_timer);
     _startTimer(kTimerTickRate);
   }
-  final DateTime endDate = DateTime(2021, 1, 25);
-  final DateTime mdstStartDate = DateTime(2021, 1, 24);
+  final DateTime startDate = DateTime(2021, 1, 25);
+  final DateTime endDate = DateTime(2021, 1, 26, 21, 0);
+
   Timer _timer;
-  Map<String, int> _timeDelta;
+  Map<String, int> _timeDeltaStart;
+  Map<String, int> _timeDeltaEnd;
   double _minutesRatio;
 
   void _startTimer(int interval) {
@@ -32,65 +34,30 @@ class MDSTTimer extends ChangeNotifier {
       // TODO: what is displayed at end?
       _minutesRatio = 1.0;
       //timer.cancel();
-    } else if (DateTime.now().isBefore(mdstStartDate)) {
+    } else if (DateTime.now().isBefore(startDate)) {
       // TODO: what is displayed before MDST starts?
+      _timeDeltaStart = getTimeDelta(startDate);
       _minutesRatio = 0.0;
     } else {
-      //updateTaskTime();
-      _timeDelta = getTimeDelta(endDate);
+      // TODO: Countdown Timer (Welcome Page) during MDST?
+      _timeDeltaStart = {'days': 0, 'hours': 0, 'minutes': 0};
+      _timeDeltaEnd = getTimeDelta(endDate);
       _minutesRatio = 1 - (endDate.difference(DateTime.now()).inMinutes / (24 * 60));
     }
     // update UI
     notifyListeners();
   }
 
-  Map<String, int> get timeDelta {
-    return _timeDelta;
+  Map<String, int> get timeDeltaStart {
+    return _timeDeltaStart;
+  }
+
+  Map<String, int> get timeDeltaEnd {
+    return _timeDeltaEnd;
   }
 
   double get minutesRatio {
     return _minutesRatio;
-  }
-
-  // TODO: dipose timer when app is closed???
-  void cancelTimer(Timer timer) {
-    _timer.cancel();
-  }
-}
-
-class BeforeTimer extends ChangeNotifier {
-  BeforeTimer() {
-    // start timer when class gets initialized
-    // by provider at app startup
-    timerCallback(_timer);
-    //_timeDelta = getTimeDelta(endDate);
-    _startTimer(kTimerTickRate);
-  }
-  final DateTime endDate = DateTime(2021, 2, 7);
-  Timer _timer;
-  Map<String, int> _timeDelta;
-
-  void _startTimer(int interval) {
-    _timer = Timer.periodic(
-      Duration(seconds: interval),
-      (Timer timer) {
-        timerCallback(timer);
-      },
-    );
-  }
-
-  timerCallback(Timer timer) {
-    if (DateTime.now().isAfter(endDate)) {
-      timer.cancel();
-    } else {
-      //print(getTimeDelta(endDate));
-      _timeDelta = getTimeDelta(endDate);
-      notifyListeners();
-    }
-  }
-
-  Map<String, int> get timeDelta {
-    return _timeDelta;
   }
 
   // TODO: dispose timer when app is closed???

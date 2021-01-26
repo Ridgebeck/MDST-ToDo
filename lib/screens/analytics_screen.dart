@@ -14,6 +14,7 @@ class AnalyticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<TaskData, MDSTTimer>(builder: (context, taskData, mdstTimer, child) {
       taskData.updateTaskTime();
+      taskData.checkForNextDay();
       return Column(
         children: [
           Padding(

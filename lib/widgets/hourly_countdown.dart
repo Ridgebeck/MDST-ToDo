@@ -16,7 +16,7 @@ class HourlyCountdown extends StatelessWidget {
           child: Center(
               child: returnTextWidget(
             mdstTimer.minutesRatio,
-            mdstTimer.timeDelta,
+            mdstTimer.timeDeltaEnd,
           )),
         ),
       );
@@ -33,10 +33,17 @@ Text returnTextWidget(double minutesRatio, Map<String, int> timeDelta) {
   } else if (minutesRatio == null) {
     return Text('Text null');
   } else {
-    return Text('noch ' +
-        timeDelta['hours'].toString() +
-        ' Stunden und ' +
-        timeDelta['minutes'].toString() +
-        ' Minuten');
+    if (timeDelta['hours'] == 0) {
+      return Text('noch ' +
+          timeDelta['minutes'].toString() +
+          (timeDelta['minutes'] > 1 ? ' Minuten' : ' Minute'));
+    } else {
+      return Text('noch ' +
+          timeDelta['hours'].toString() +
+          (timeDelta['hours'] > 1 ? ' Stunden' : ' Stunde') +
+          ' und ' +
+          timeDelta['minutes'].toString() +
+          (timeDelta['minutes'] > 1 ? ' Minuten' : ' Minute'));
+    }
   }
 }

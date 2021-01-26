@@ -7,6 +7,7 @@ class Task {
   String subtitle;
   String infoText;
   Duration totalTime;
+  DateTime originalStartTime;
   DateTime lastStartTime;
   bool isActive = false;
   bool isDone = false;
@@ -16,6 +17,7 @@ class Task {
     this.subtitle,
     this.infoText = playMessage,
     this.totalTime = const Duration(minutes: 0),
+    this.originalStartTime,
     this.lastStartTime,
   });
 }
