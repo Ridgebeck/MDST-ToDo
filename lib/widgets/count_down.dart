@@ -10,7 +10,7 @@ class CountDown extends StatelessWidget {
     return Consumer<MDSTTimer>(builder: (context, timer, child) {
       return SafeArea(
         child: Container(
-          padding: EdgeInsets.only(left: 15.0, right: 15.0, top: 20.0),
+          padding: EdgeInsets.only(left: 10.0, right: 10.0, top: 15.0),
           //color: Colors.green,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -34,12 +34,13 @@ class CountDown extends StatelessWidget {
                     timer.timeDeltaStart['days'] > 1 ? 'Tage' : 'Tag',
                     style: TextStyle(color: kTextColor, fontSize: 40.0),
                   ),
-                  SizedBox(width: 20.0),
+                  SizedBox(width: 30.0),
                 ],
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 children: [
+                  SizedBox(width: 30.0),
                   Text(
                     '${timer.timeDeltaStart['hours']}',
                     style:
@@ -77,11 +78,11 @@ class CountDown extends StatelessWidget {
                     timer.timeDeltaStart['minutes'] > 1 ? 'Minuten' : 'Minute',
                     style: TextStyle(color: kTextColor, fontSize: 27.0),
                   ),
+                  SizedBox(width: 30.0),
                 ],
               ),
               Column(
                 children: [
-                  SizedBox(height: 15.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.baseline,

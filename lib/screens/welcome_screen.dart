@@ -66,8 +66,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         ),
         Positioned(
           right: -55.0,
-          bottom: 250.0,
-          width: 290.0,
+          bottom: 220.0,
+          width: 270.0,
           height: 180.0,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(15.0),
@@ -83,7 +83,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           left: -160.0,
           right: 0.0,
           //width: 500.0,
-          height: 350.0,
+          height: 330.0,
           child: Container(
             decoration: BoxDecoration(
               image: DecorationImage(
@@ -94,8 +94,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         ),
         Positioned(
           right: -55.0,
-          bottom: 250.0,
-          width: 290.0,
+          bottom: 220.0,
+          width: 270.0,
           height: 180.0,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(15.0),
@@ -112,7 +112,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         ),
         Positioned(
           top: 0.0,
-          bottom: 450.0,
+          bottom: 420.0,
           left: 0.0,
           right: 0.0,
           //width: 500.0,
@@ -120,10 +120,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: showTopWidget(),
         ),
         Positioned(
-          right: 40,
-          bottom: 40,
-          height: 130,
-          width: 130,
+          right: 30,
+          bottom: 30,
+          height: 110,
+          width: 110,
           child: Material(
             color: Colors.transparent,
             child: InkWell(
@@ -141,8 +141,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 child: Center(
                     child: Text(
                   "Hier geht's los ➡",
-                  style:
-                      TextStyle(color: Colors.white, fontSize: 22.0, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.white, fontSize: 20.0),
                   textAlign: TextAlign.center,
                 )),
               ),
