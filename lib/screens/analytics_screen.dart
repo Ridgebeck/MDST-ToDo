@@ -6,8 +6,6 @@ import 'package:provider/provider.dart';
 import '../util/task_data.dart';
 
 const Color kCardColor = Color(0xCCEEEEEE);
-final DateTime endDate = DateTime(2021, 2, 8);
-//const oneSec = const Duration(seconds: 10);
 
 class AnalyticsScreen extends StatelessWidget {
   @override
