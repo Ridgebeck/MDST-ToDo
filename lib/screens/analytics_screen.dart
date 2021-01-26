@@ -10,9 +10,7 @@ const Color kCardColor = Color(0xCCEEEEEE);
 class AnalyticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer2<TaskData, MDSTTimer>(builder: (context, taskData, mdstTimer, child) {
-      taskData.updateTaskTime();
-      taskData.checkForNextDay();
+    return Consumer<TaskData>(builder: (context, taskData, child) {
       return Column(
         children: [
           Padding(

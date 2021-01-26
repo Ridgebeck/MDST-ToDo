@@ -16,7 +16,6 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final TaskData taskData = TaskData();
   // Create the initialization Future outside of `build`:
   //final Future<FirebaseApp> _initialization = Firebase.initializeApp();
   @override
@@ -28,7 +27,7 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => taskData),
+        ChangeNotifierProvider(create: (_) => TaskData()),
         ChangeNotifierProvider(create: (_) => MDSTTimer()),
       ],
       //child:

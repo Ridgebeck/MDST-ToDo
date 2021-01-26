@@ -42,3 +42,5 @@ const double kEmojiTextSize = 35.0;
 const double kLeadingIconSize = 45.0;
 const String slideMessage = 'swipe 👉 wenn feddich';
 const String playMessage = 'drück ▶ um zu starten \n swipe 👈 zum 🗑';
+
+enum listType { active, finished, archived }

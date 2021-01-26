@@ -8,23 +8,53 @@ import 'shared_prefs.dart';
 
 class TaskData extends ChangeNotifier {
   bool _inReorder = false;
-  List<Task> _activeTasks = sharedPrefs.initTaskListFromLocal(false);
-  List<Task> _finishedTasks = sharedPrefs.initTaskListFromLocal(true);
-  DateTime _currentTasksDateTime = DateTime(
-    DateTime.now().year,
-    DateTime.now().month,
-    DateTime.now().day,
-    DateTime.now().hour,
-    DateTime.now().minute,
-  );
+  List<Task> _activeTasks = sharedPrefs.initTaskListFromLocal(listType.active);
+  List<Task> _finishedTasks = sharedPrefs.initTaskListFromLocal(listType.finished);
+  List<Task> _archivedTasks = sharedPrefs.initTaskListFromLocal(listType.archived);
 
-  void checkForNextDay() {
+  void archiveOldTasks() {
     DateTime now = DateTime.now();
-    now = DateTime(now.year, now.month, now.day, now.hour, now.minute);
-    if (now.isAfter(_currentTasksDateTime)) {
-      print('A NEW MINUTE!');
-      _currentTasksDateTime = now;
+    DateTime dateToday = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      // now.hour,
+      // now.minute,
+    );
+    print(dateToday);
+
+    List<Task> toRemove = [];
+    for (Task task in _finishedTasks) {
+      print(task.activity);
+      print(task.category);
+      print(task.originalStartTime);
+
+      DateTime taskStartDay = DateTime(
+        task.originalStartTime.year,
+        task.originalStartTime.month,
+        task.originalStartTime.day,
+        // task.originalStartTime.hour,
+        // task.originalStartTime.minute,
+      );
+
+      if (taskStartDay.isBefore(dateToday)) {
+        print('start time: ${task.originalStartTime}');
+        // TODO: archive old tasks
+        print('ARCHIVING!');
+        // add task to remove list
+        toRemove.add(task);
+      }
     }
+    // move all tasks which are on the remove list
+    for (Task task in toRemove) {
+      moveToArchivedList(task);
+    }
+  }
+
+  void printTest() {
+    print('10s tick');
+    print('archived length: ${_archivedTasks.length}');
+    //print('current task date: $_currentTasksDate');
   }
 
   void updateTaskTime() {
@@ -93,19 +123,38 @@ class TaskData extends ChangeNotifier {
 
   void moveToFinishedList(Task task) {
     toggleActivity(task);
-    _activeTasks.remove(task);
     _finishedTasks.add(task);
-    saveTaskListToLocal(true);
-    saveTaskListToLocal(false);
+    _activeTasks.remove(task);
+    saveTaskListToLocal(listType.finished);
+    saveTaskListToLocal(listType.active);
     notifyListeners();
-    print(task.originalStartTime);
   }
 
-  void saveTaskListToLocal(bool finished) {
+  void moveToArchivedList(Task task) {
+    _archivedTasks.add(task);
+    _finishedTasks.remove(task);
+    saveTaskListToLocal(listType.finished);
+    saveTaskListToLocal(listType.archived);
+    notifyListeners();
+  }
+
+  void saveTaskListToLocal(listType type) {
     // remove old data
-    sharedPrefs.remove(finished);
+    sharedPrefs.remove(type);
     // define which list to save
-    List<Task> taskList = finished ? _finishedTasks : _activeTasks;
+    List<Task> taskList = [];
+    switch (type) {
+      case listType.active:
+        taskList = _activeTasks;
+        break;
+      case listType.finished:
+        taskList = _finishedTasks;
+        break;
+      case listType.archived:
+        taskList = _archivedTasks;
+        break;
+    }
+
     // create empty string list
     List<String> stringList = [];
     // save each task as JSON Map
@@ -126,52 +175,93 @@ class TaskData extends ChangeNotifier {
     }
     try {
       // save list of Strings / json maps to local storage
-      finished
-          ? sharedPrefs.setStringList('finishedTaskList', stringList)
-          : sharedPrefs.setStringList('activeTaskList', stringList);
+      switch (type) {
+        case listType.active:
+          sharedPrefs.setStringList('activeTaskList', stringList);
+          break;
+        case listType.finished:
+          sharedPrefs.setStringList('finishedTaskList', stringList);
+          break;
+        case listType.archived:
+          sharedPrefs.setStringList('archivedTaskList', stringList);
+          break;
+      }
     } catch (e) {
       print(e);
     }
   }
 
-  void readTaskListFromLocal(bool finished) {
-    // TODO: add try catch
-    List<String> stringList = [];
-    stringList = finished
-        ? sharedPrefs.getStringList('finishedTaskList')
-        : sharedPrefs.getStringList('activeTaskList');
-    if (stringList != null) {
-      // delete current list to replace with local values
-      finished ? _finishedTasks.clear() : _activeTasks.clear();
-
-      for (String entry in stringList) {
-        // decode Strings into json maps
-        Map<String, dynamic> jsonMap = json.decode(entry);
-        // create a Task object from data
-        Task task = Task(category: jsonMap['category'], activity: jsonMap['activity']);
-        task.subtitle = jsonMap['subtitle'];
-        task.totalTime = Duration(seconds: jsonMap['totalTime']);
-        jsonMap['originalStartTime'] == null
-            ? task.originalStartTime = null
-            : task.originalStartTime = DateTime.parse(jsonMap['originalStartTime']);
-        jsonMap['lastStartTime'] == null
-            ? task.lastStartTime = null
-            : task.lastStartTime = DateTime.parse(jsonMap['lastStartTime']);
-        task.isActive = jsonMap['isActive'];
-        task.isDone = jsonMap['isDone'];
-        // add Task object to corresponding task list
-        finished ? _finishedTasks.add(task) : _activeTasks.add(task);
-      }
-    }
-    // update UI
-    notifyListeners();
-  }
+  // void readTaskListFromLocal(listType type) {
+  //   List<String> stringList = [];
+  //   try {
+  //
+  //     // save list of Strings / json maps to local storage
+  //     switch (type) {
+  //       case listType.active:
+  //         sharedPrefs.getStringList('activeTaskList');
+  //         break;
+  //       case listType.finished:
+  //         sharedPrefs.getStringList('finishedTaskList');
+  //         break;
+  //       case listType.archived:
+  //         sharedPrefs.getStringList('archivedTaskList');
+  //         break;
+  //     }
+  //
+  //     if (stringList != null) {
+  //       // delete current list to replace with local values
+  //       switch (type) {
+  //         case listType.active:
+  //           _activeTasks.clear();
+  //           break;
+  //         case listType.finished:
+  //           _finishedTasks.clear();
+  //           break;
+  //         case listType.archived:
+  //           _archivedTasks.clear();
+  //           break;
+  //       }
+  //
+  //       // convert String list to task object
+  //       for (String entry in stringList) {
+  //         // decode Strings into json maps
+  //         Map<String, dynamic> jsonMap = json.decode(entry);
+  //         // create a Task object from data
+  //         Task task = Task(category: jsonMap['category'], activity: jsonMap['activity']);
+  //         task.subtitle = jsonMap['subtitle'];
+  //         task.totalTime = Duration(seconds: jsonMap['totalTime']);
+  //         jsonMap['originalStartTime'] == null
+  //             ? task.originalStartTime = null
+  //             : task.originalStartTime = DateTime.parse(jsonMap['originalStartTime']);
+  //         jsonMap['lastStartTime'] == null
+  //             ? task.lastStartTime = null
+  //             : task.lastStartTime = DateTime.parse(jsonMap['lastStartTime']);
+  //         task.isActive = jsonMap['isActive'];
+  //         task.isDone = jsonMap['isDone'];
+  //
+  //         // add Task object to corresponding task list
+  //         switch (type) {
+  //           case listType.active:
+  //             _activeTasks.add(task);
+  //             break;
+  //           case listType.finished:
+  //             _finishedTasks.add(task);
+  //             break;
+  //           case listType.archived:
+  //             _archivedTasks.add(task);
+  //             break;
+  //         }
+  //
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  //   // update UI
+  //   notifyListeners();
+  // }
 
   void addTask({int emojiIndex1, int emojiIndex2, String subtitle}) {
-    if (_activeTasks.length == 0 && finishedTasks.length == 0) {
-      _currentTasksDateTime = DateTime.now();
-    }
-
     final task = Task(
       category: _categoryStringList[emojiIndex1],
       activity: _activityStringList[emojiIndex2],
@@ -180,7 +270,7 @@ class TaskData extends ChangeNotifier {
     );
 
     _activeTasks.add(task);
-    saveTaskListToLocal(false);
+    saveTaskListToLocal(listType.active);
     notifyListeners();
   }
 
@@ -198,19 +288,19 @@ class TaskData extends ChangeNotifier {
     // toggle active property
     task.isActive = !task.isActive;
     // save active tasks to local
-    saveTaskListToLocal(false);
+    saveTaskListToLocal(listType.active);
     notifyListeners();
   }
 
   void removeActiveTask(Task task) {
     _activeTasks.remove(task);
-    saveTaskListToLocal(false);
+    saveTaskListToLocal(listType.active);
     notifyListeners();
   }
 
   void removeFinishedTask(Task task) {
     _finishedTasks.remove(task);
-    saveTaskListToLocal(true);
+    saveTaskListToLocal(listType.finished);
     notifyListeners();
   }
 

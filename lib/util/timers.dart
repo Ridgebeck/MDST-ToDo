@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:MDST_todo/util/task_data.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 const kTimerTickRate = 10;
 
@@ -12,8 +11,16 @@ class MDSTTimer extends ChangeNotifier {
     timerCallback(_timer);
     _startTimer(kTimerTickRate);
   }
+  TaskData taskData;
   final DateTime startDate = DateTime(2021, 2, 7);
   final DateTime endDate = DateTime(2021, 2, 8);
+  // DateTime _currentTasksDate = DateTime(
+  //   DateTime.now().year,
+  //   DateTime.now().month,
+  //   DateTime.now().day,
+  //   DateTime.now().hour,
+  //   DateTime.now().minute,
+  // );
 
   Timer _timer;
   Map<String, int> _timeDeltaStart;
@@ -30,11 +37,17 @@ class MDSTTimer extends ChangeNotifier {
   }
 
   timerCallback(Timer timer) {
-    if (DateTime.now().isAfter(endDate)) {
+    DateTime now = DateTime.now();
+    // DateTime currentDate = DateTime(now.year, now.month, now.day, now.hour, now.minute);
+    // if (currentDate.isAfter(_currentTasksDate)) {
+    //   print('A NEW MINUTE!');
+    //   _currentTasksDate = now;
+    // }
+    if (now.isAfter(endDate)) {
       // TODO: what is displayed at end?
       _minutesRatio = 1.0;
       //timer.cancel();
-    } else if (DateTime.now().isBefore(startDate)) {
+    } else if (now.isBefore(startDate)) {
       // TODO: what is displayed before MDST starts?
       _timeDeltaStart = getTimeDelta(startDate);
       _minutesRatio = 0.0;
@@ -42,7 +55,7 @@ class MDSTTimer extends ChangeNotifier {
       // TODO: Countdown Timer (Welcome Page) during MDST?
       _timeDeltaStart = {'days': 0, 'hours': 0, 'minutes': 0};
       _timeDeltaEnd = getTimeDelta(endDate);
-      _minutesRatio = 1 - (endDate.difference(DateTime.now()).inMinutes / (24 * 60));
+      _minutesRatio = 1 - (endDate.difference(now).inMinutes / (24 * 60));
     }
     // update UI
     notifyListeners();

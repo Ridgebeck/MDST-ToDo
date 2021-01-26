@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'task.dart';
+import '../constants.dart';
 
 class SharedPrefs {
   static SharedPreferences _sharedPrefs;
@@ -38,23 +39,43 @@ class SharedPrefs {
     await _sharedPrefs.clear();
   }
 
-  void remove(bool finished) async {
-    if (finished) {
-      await _sharedPrefs.remove('finishedTaskList');
-    } else {
-      await _sharedPrefs.remove('activeTaskList');
+  void remove(listType type) async {
+    switch (type) {
+      case listType.active:
+        await _sharedPrefs.remove('activeTaskList');
+        break;
+      case listType.finished:
+        await _sharedPrefs.remove('finishedTaskList');
+        break;
+      case listType.archived:
+        await _sharedPrefs.remove('archivedTaskList');
+        break;
     }
   }
 
-  List<Task> initTaskListFromLocal(bool finished) {
+  List<Task> initTaskListFromLocal(listType type) {
     List<Task> tempTaskList = [];
     // for debug resetting
     //clear();
 
     try {
-      List<String> stringList = finished
-          ? sharedPrefs.getStringList('finishedTaskList')
-          : sharedPrefs.getStringList('activeTaskList');
+      List<String> stringList = [];
+      switch (type) {
+        case listType.active:
+          stringList = sharedPrefs.getStringList('activeTaskList');
+          break;
+        case listType.finished:
+          stringList = sharedPrefs.getStringList('finishedTaskList');
+          break;
+        case listType.archived:
+          stringList = sharedPrefs.getStringList('archivedTaskList');
+          break;
+      }
+
+      // List<String> stringList = finished
+      //     ? sharedPrefs.getStringList('finishedTaskList')
+      //     : sharedPrefs.getStringList('activeTaskList');
+
       if (stringList != null) {
         for (String entry in stringList) {
           // decode Strings into json maps
@@ -62,6 +83,9 @@ class SharedPrefs {
           // create a Task object from data
           Task task = Task(category: jsonMap['category'], activity: jsonMap['activity']);
           task.subtitle = jsonMap['subtitle'];
+          jsonMap['originalStartTime'] == null
+              ? task.originalStartTime = null
+              : task.originalStartTime = DateTime.parse(jsonMap['originalStartTime']);
           task.totalTime = Duration(seconds: jsonMap['totalTime']);
           jsonMap['lastStartTime'] == null
               ? task.lastStartTime = null
