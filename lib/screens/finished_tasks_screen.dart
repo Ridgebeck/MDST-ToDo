@@ -6,42 +6,21 @@ import '../util/task_data.dart';
 import '../util/task.dart';
 import '../constants.dart';
 import '../widgets/slide_widget.dart';
+import '../widgets/gif_page.dart';
 
 class FinishedTasksScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<TaskData>(builder: (context, taskData, child) {
       if (taskData.finishedTasksLength == 0) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          //crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Text(
-                'Das erste Projekt ist immer das schwerste',
-                style: TextStyle(color: kKliemannGrau, fontSize: 35),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            Container(
-              height: 260.0,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/motivation.gif'),
-                  fit: BoxFit.fitWidth,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Text(
-                'Kleiner Tip: Einfach machen. 💡',
-                style: TextStyle(color: kKliemannGrau, fontSize: 30),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            //Image.asset('assets/notasks.gif'),
+        return GifPage(
+          titleTextList: [
+            Text('Komm schon.', style: kGifTextStyle),
+            Text("Auf los geht's los!", style: kGifTextStyle),
+          ],
+          assetImageString: 'assets/motivation.gif',
+          subtitleTextList: [
+            Text('💡 Einfach mal machen. 💡', style: kGifTextStyle),
           ],
         );
       } else {
@@ -82,7 +61,7 @@ class FinishedTasksScreen extends StatelessWidget {
                   '${finishedTask.totalTime.inMinutes} min',
                   style: TextStyle(color: kInactiveColor),
                 ),
-                bottom: Text(''),
+                //bottom: Text(finishedTask.infoText),
               ),
             );
           },

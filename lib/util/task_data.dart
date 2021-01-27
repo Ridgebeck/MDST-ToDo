@@ -18,8 +18,8 @@ class TaskData extends ChangeNotifier {
       now.year,
       now.month,
       now.day,
-      // now.hour,
-      // now.minute,
+      now.hour,
+      now.minute,
     );
     print(dateToday);
 
@@ -33,8 +33,8 @@ class TaskData extends ChangeNotifier {
         task.originalStartTime.year,
         task.originalStartTime.month,
         task.originalStartTime.day,
-        // task.originalStartTime.hour,
-        // task.originalStartTime.minute,
+        task.originalStartTime.hour,
+        task.originalStartTime.minute,
       );
 
       if (taskStartDay.isBefore(dateToday)) {

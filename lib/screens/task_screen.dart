@@ -20,6 +20,7 @@ import '../widgets/hourly_countdown.dart';
 import '../widgets/progress_bar.dart';
 import '../widgets/todo_tile.dart';
 import '../widgets/slide_widget.dart';
+import '../widgets/gif_page.dart';
 
 class TaskScreen extends StatefulWidget {
   @override
@@ -61,50 +62,16 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
           },
         ),
         body: taskData.activeTasksLength == 0 && taskData.finishedTasksLength == 0
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      //crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Text(
-                            'Wie, noch keine Projekte??!!',
-                            style: TextStyle(color: kKliemannGrau, fontSize: 35),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        Container(
-                          height: 260.0,
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/notasks.gif'),
-                              fit: BoxFit.fitWidth,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Text(
-                            'Nee neee neee. Jetzt aber mal schnell starten.',
-                            style: TextStyle(color: kKliemannGrau, fontSize: 30),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        //Image.asset('assets/notasks.gif'),
-                      ],
-                    ),
-                  ),
-                  Container(
-                      height: 65.0,
-                      child: Text(
-                        '👉 👉🏼 👉🏿',
-                        style: TextStyle(fontSize: 40.0),
-                      )),
+            ? GifPage(
+                titleTextList: [
+                  Text('Wie, noch keine Projekte??!!', style: kGifTextStyle),
                 ],
+                assetImageString: 'assets/notasks.gif',
+                subtitleTextList: [
+                  Text('Neee neee neee.', style: kGifTextStyle),
+                  Text('Jetzt aber mal schnell starten!', style: kGifTextStyle),
+                ],
+                hasFingers: true,
               )
             : Column(
                 children: [

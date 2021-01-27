@@ -44,3 +44,19 @@ const String slideMessage = 'swipe 👉 wenn feddich';
 const String playMessage = 'drück ▶ um zu starten \n swipe 👈 zum 🗑';
 
 enum listType { active, finished, archived }
+
+const kStatsTitleStyle = TextStyle(
+  fontSize: 24.0,
+  color: kKliemannGrau,
+);
+const kStatsSubtitleStyle = TextStyle(
+  fontSize: 16.0,
+  color: kKliemannGrau,
+);
+
+const kGifTextStyle = TextStyle(
+  color: kKliemannGrau,
+  fontSize: 35,
+);
+
+const List<Text> emptyTextList = [Text('a')];

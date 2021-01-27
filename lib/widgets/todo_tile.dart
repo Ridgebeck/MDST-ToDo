@@ -4,7 +4,12 @@ import '../util/task.dart';
 import 'package:MDST_todo/util/box.dart';
 
 class TodoTile extends StatelessWidget {
-  TodoTile({this.task, this.leading, this.trailing, this.bottom});
+  TodoTile({
+    this.task,
+    this.leading,
+    this.trailing,
+    this.bottom,
+  });
 
   //final TaskData taskData;
   final Task task;
@@ -55,12 +60,12 @@ class TodoTile extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: 10.0),
-                      bottom,
+                      bottom == null ? Container() : FittedBox(child: bottom),
                     ],
                   ),
                 ),
               ),
-              trailing,
+              trailing == null ? Container() : trailing,
             ],
           ),
         ));
