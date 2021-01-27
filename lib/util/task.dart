@@ -19,6 +19,7 @@ class Task {
     this.infoText = playMessage,
     this.totalTime = const Duration(minutes: 0),
     this.originalStartTime,
+    this.finishedTime,
     this.lastStartTime,
   });
 }

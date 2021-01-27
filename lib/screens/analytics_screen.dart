@@ -1,4 +1,5 @@
 import 'package:MDST_todo/util/timers.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -13,34 +14,75 @@ class AnalyticsScreen extends StatelessWidget {
     return Consumer<TaskData>(builder: (context, taskData, child) {
       return Column(
         children: [
+          Expanded(child: Container()),
           Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                // decoration: BoxDecoration(
-                //   color: kCardColor,
-                //   borderRadius: BorderRadius.circular(15.0),
-                // ),
-                height: 50.0,
-                child: Center(
-                  child: FittedBox(
-                    fit: BoxFit.fitHeight,
-                    child: Text(
-                      'Was du geschafft hast',
-                      style: TextStyle(
-                        fontSize: 22.0,
-                        fontWeight: FontWeight.bold,
-                        color: kKliemannGrau,
-                      ),
-                    ),
-                  ),
+            flex: 4,
+            child: Container(
+              // decoration: BoxDecoration(
+              //   color: kCardColor,
+              //   borderRadius: BorderRadius.circular(15.0),
+              // ),
+              height: 0.0,
+              child: Center(
+                child: Column(
+                  children: [
+                    Expanded(child: Container()),
+                    Expanded(
+                        flex: 2,
+                        child: Row(
+                          children: [
+                            Expanded(child: Container()),
+                            Expanded(
+                                child: Align(
+                              alignment: Alignment.centerRight,
+                              child: FittedBox(
+                                  child: Text(
+                                'Du',
+                                style: TextStyle(
+                                  fontSize: 50.0,
+                                  fontWeight: taskData.communitySwitch
+                                      ? FontWeight.normal
+                                      : FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.right,
+                              )),
+                            )),
+                            Expanded(child: FittedBox(child: Text('😀'))),
+                            CupertinoSwitch(
+                              value: taskData.communitySwitch,
+                              trackColor: kKliemannBlau,
+                              activeColor: kKliemannBlau,
+                              onChanged: (newValue) {
+                                taskData.setCommunitySwitch(newValue);
+                              },
+                            ),
+                            Expanded(child: FittedBox(child: Text('🌍'))),
+                            Expanded(
+                                child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: FittedBox(
+                                  child: Text(
+                                'Alle',
+                                style: TextStyle(
+                                  fontSize: 50.0,
+                                  fontWeight: taskData.communitySwitch
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                                textAlign: TextAlign.left,
+                              )),
+                            )),
+                            Expanded(child: Container()),
+                          ],
+                        )),
+                    Expanded(child: Container()),
+                  ],
                 ),
               ),
             ),
           ),
           Expanded(
-            flex: 4,
+            flex: 20,
             child: Row(
               children: [
                 Expanded(
@@ -77,7 +119,7 @@ class AnalyticsScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 4,
+            flex: 20,
             child: Row(
               children: [
                 Expanded(

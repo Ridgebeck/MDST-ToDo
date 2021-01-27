@@ -204,7 +204,7 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
       child: TodoTile(
         task: task,
         leading: PlayButton(task: task, taskData: taskData),
-        trailing: HandleIcon(task: task),
+        trailing: taskData.activeTasksLength == 1 ? Container() : HandleIcon(task: task),
         bottom: Text(
           task.infoText,
           style: task.isActive ? kInfoTextStyleActive : kInfoTextStyle,
@@ -261,10 +261,19 @@ class HandleIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Handle(
       delay: Duration(milliseconds: 100),
-      child: Icon(
-        Icons.reorder_rounded,
-        size: 40.0,
-        color: task.isActive ? kActiveColor : kInactiveColor,
+      child: Column(
+        children: [
+          Icon(
+            Icons.keyboard_arrow_up,
+            size: 40.0,
+            color: task.isActive ? kActiveColor : kInactiveColor,
+          ),
+          Icon(
+            Icons.keyboard_arrow_down,
+            size: 40.0,
+            color: task.isActive ? kActiveColor : kInactiveColor,
+          ),
+        ],
       ),
     );
   }

@@ -8,6 +8,7 @@ import 'shared_prefs.dart';
 
 class TaskData extends ChangeNotifier {
   bool _inReorder = false;
+  bool _communitySwitch = false;
   List<Task> _activeTasks = sharedPrefs.initTaskListFromLocal(listType.active);
   List<Task> _finishedTasks = sharedPrefs.initTaskListFromLocal(listType.finished);
   List<Task> _archivedTasks = sharedPrefs.initTaskListFromLocal(listType.archived);
@@ -25,8 +26,8 @@ class TaskData extends ChangeNotifier {
 
     List<Task> toRemove = [];
     for (Task task in _finishedTasks) {
-      //print(task.originalStartTime);
-
+      //print('finished task datetime check');
+      //print(task.finishedTime);
       DateTime taskFinishedDay = DateTime(
         task.finishedTime.year,
         task.finishedTime.month,
@@ -34,12 +35,10 @@ class TaskData extends ChangeNotifier {
         //task.finishedTime.hour,
         //task.finishedTime.minute,
       );
-
       if (taskFinishedDay.isBefore(dateToday)) {
-        print('start time: ${task.originalStartTime}');
         // TODO: archive old tasks
         print('ARCHIVING!');
-        // add task to remove list
+        // add task to a remove list
         toRemove.add(task);
       }
     }
@@ -371,5 +370,14 @@ class TaskData extends ChangeNotifier {
 
   bool get inReorder {
     return _inReorder;
+  }
+
+  bool get communitySwitch {
+    return _communitySwitch;
+  }
+
+  void setCommunitySwitch(bool value) {
+    _communitySwitch = value;
+    notifyListeners();
   }
 }
