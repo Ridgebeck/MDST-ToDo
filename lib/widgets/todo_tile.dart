@@ -20,17 +20,18 @@ class TodoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Box(
-        color: task.isActive ? kKliemannBlau.withOpacity(0.7) : kKliemannGrau.withOpacity(0.7),
-        elevation: 0.0,
+        color: task.isActive ? kKliemannBlau.withOpacity(0.5) : kKliemannGrau.withOpacity(0.5),
+        //elevation: 4.0,
+        //shadowColor: Colors.black.withOpacity(0.5),
         alignment: Alignment.center,
-        //border: Border.all(width: 1.0, color: Colors.white),
+        //border: Border.all(width: 1.0, color: kKliemannGelb),
         borderRadius: 15.0,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              leading,
+              leading == null ? Container() : leading,
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),

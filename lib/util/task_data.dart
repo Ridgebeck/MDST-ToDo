@@ -27,15 +27,15 @@ class TaskData extends ChangeNotifier {
     for (Task task in _finishedTasks) {
       //print(task.originalStartTime);
 
-      DateTime taskStartDay = DateTime(
-        task.originalStartTime.year,
-        task.originalStartTime.month,
-        task.originalStartTime.day,
-        //task.originalStartTime.hour,
-        //task.originalStartTime.minute,
+      DateTime taskFinishedDay = DateTime(
+        task.finishedTime.year,
+        task.finishedTime.month,
+        task.finishedTime.day,
+        //task.finishedTime.hour,
+        //task.finishedTime.minute,
       );
 
-      if (taskStartDay.isBefore(dateToday)) {
+      if (taskFinishedDay.isBefore(dateToday)) {
         print('start time: ${task.originalStartTime}');
         // TODO: archive old tasks
         print('ARCHIVING!');
@@ -47,6 +47,7 @@ class TaskData extends ChangeNotifier {
     for (Task task in toRemove) {
       moveToArchivedList(task);
     }
+    print('Archived List length: ${archivedTasks.length}');
   }
 
   void updateTaskTime() {
@@ -114,6 +115,7 @@ class TaskData extends ChangeNotifier {
   }
 
   void moveToFinishedList(Task task) {
+    task.finishedTime = DateTime.now();
     toggleActivity(task);
     _finishedTasks.add(task);
     _activeTasks.remove(task);
@@ -183,76 +185,6 @@ class TaskData extends ChangeNotifier {
     }
   }
 
-  // void readTaskListFromLocal(listType type) {
-  //   List<String> stringList = [];
-  //   try {
-  //
-  //     // save list of Strings / json maps to local storage
-  //     switch (type) {
-  //       case listType.active:
-  //         sharedPrefs.getStringList('activeTaskList');
-  //         break;
-  //       case listType.finished:
-  //         sharedPrefs.getStringList('finishedTaskList');
-  //         break;
-  //       case listType.archived:
-  //         sharedPrefs.getStringList('archivedTaskList');
-  //         break;
-  //     }
-  //
-  //     if (stringList != null) {
-  //       // delete current list to replace with local values
-  //       switch (type) {
-  //         case listType.active:
-  //           _activeTasks.clear();
-  //           break;
-  //         case listType.finished:
-  //           _finishedTasks.clear();
-  //           break;
-  //         case listType.archived:
-  //           _archivedTasks.clear();
-  //           break;
-  //       }
-  //
-  //       // convert String list to task object
-  //       for (String entry in stringList) {
-  //         // decode Strings into json maps
-  //         Map<String, dynamic> jsonMap = json.decode(entry);
-  //         // create a Task object from data
-  //         Task task = Task(category: jsonMap['category'], activity: jsonMap['activity']);
-  //         task.subtitle = jsonMap['subtitle'];
-  //         task.totalTime = Duration(seconds: jsonMap['totalTime']);
-  //         jsonMap['originalStartTime'] == null
-  //             ? task.originalStartTime = null
-  //             : task.originalStartTime = DateTime.parse(jsonMap['originalStartTime']);
-  //         jsonMap['lastStartTime'] == null
-  //             ? task.lastStartTime = null
-  //             : task.lastStartTime = DateTime.parse(jsonMap['lastStartTime']);
-  //         task.isActive = jsonMap['isActive'];
-  //         task.isDone = jsonMap['isDone'];
-  //
-  //         // add Task object to corresponding task list
-  //         switch (type) {
-  //           case listType.active:
-  //             _activeTasks.add(task);
-  //             break;
-  //           case listType.finished:
-  //             _finishedTasks.add(task);
-  //             break;
-  //           case listType.archived:
-  //             _archivedTasks.add(task);
-  //             break;
-  //         }
-  //
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  //   // update UI
-  //   notifyListeners();
-  // }
-
   void addTask({int emojiIndex1, int emojiIndex2, String subtitle}) {
     final task = Task(
       category: _categoryStringList[emojiIndex1],
@@ -320,6 +252,10 @@ class TaskData extends ChangeNotifier {
     return UnmodifiableListView(_activeTasks);
   }
 
+  UnmodifiableListView<Task> get archivedTasks {
+    return UnmodifiableListView(_archivedTasks);
+  }
+
   // UnmodifiableListView<Text> get categoryEmojis {
   //   return UnmodifiableListView(_categoryEmojis);
   // }
@@ -334,6 +270,10 @@ class TaskData extends ChangeNotifier {
 
   int get finishedTasksLength {
     return _finishedTasks.length;
+  }
+
+  int get archivedTasksLength {
+    return _archivedTasks.length;
   }
 
   Map<String, int> get totalTime {

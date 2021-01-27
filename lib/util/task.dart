@@ -9,6 +9,7 @@ class Task {
   Duration totalTime;
   DateTime originalStartTime;
   DateTime lastStartTime;
+  DateTime finishedTime;
   bool isActive = false;
   bool isDone = false;
   Task({
