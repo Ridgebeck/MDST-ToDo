@@ -44,12 +44,9 @@ class _LayoutFrameState extends State<LayoutFrame> {
     return Consumer2<TaskData, MDSTTimer>(builder: (context, taskData, mdstTimer, child) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         taskData.updateTaskTime();
-        taskData.printTest();
         taskData.archiveOldTasks();
       });
-      //taskData.updateTaskTime();
-      //taskData.printTest();
-      //taskData.checkForNextDay();
+
       return Stack(
         children: [
           Container(
@@ -71,10 +68,27 @@ class _LayoutFrameState extends State<LayoutFrame> {
               appBar: AppBar(
                 automaticallyImplyLeading: false,
                 title: Center(
-                  child: Text(
-                    'MDST 2021',
-                    style: TextStyle(fontSize: 37.0, color: kKliemannGrau, fontFamily: 'Monoton'),
-                    textAlign: TextAlign.center,
+                  child: Container(
+                    height: 100.0,
+                    child: Column(
+                      children: [
+                        Expanded(flex: 4, child: Container()),
+                        Expanded(
+                          flex: 15,
+                          child: FittedBox(
+                            child: Text(
+                              'MDST 2021',
+                              style: TextStyle(
+                                color: kKliemannGrau,
+                                fontFamily: 'Monoton',
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        Expanded(flex: 3, child: Container()),
+                      ],
+                    ),
                   ),
                 ),
                 backgroundColor: Colors.transparent,

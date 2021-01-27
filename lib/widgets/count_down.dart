@@ -113,7 +113,7 @@ class CountDown extends StatelessWidget {
                       FittedBox(
                         child: Text(
                           'bis zum',
-                          style: TextStyle(color: kTextColor, fontSize: 20.0),
+                          style: TextStyle(color: kTextColor, fontSize: 25.0),
                         ),
                       ),
                       SizedBox(width: 15.0),

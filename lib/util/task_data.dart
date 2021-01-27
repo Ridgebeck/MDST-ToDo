@@ -18,23 +18,21 @@ class TaskData extends ChangeNotifier {
       now.year,
       now.month,
       now.day,
-      now.hour,
-      now.minute,
+      //now.hour,
+      //now.minute,
     );
     print(dateToday);
 
     List<Task> toRemove = [];
     for (Task task in _finishedTasks) {
-      print(task.activity);
-      print(task.category);
-      print(task.originalStartTime);
+      //print(task.originalStartTime);
 
       DateTime taskStartDay = DateTime(
         task.originalStartTime.year,
         task.originalStartTime.month,
         task.originalStartTime.day,
-        task.originalStartTime.hour,
-        task.originalStartTime.minute,
+        //task.originalStartTime.hour,
+        //task.originalStartTime.minute,
       );
 
       if (taskStartDay.isBefore(dateToday)) {
@@ -49,12 +47,6 @@ class TaskData extends ChangeNotifier {
     for (Task task in toRemove) {
       moveToArchivedList(task);
     }
-  }
-
-  void printTest() {
-    print('10s tick');
-    print('archived length: ${_archivedTasks.length}');
-    //print('current task date: $_currentTasksDate');
   }
 
   void updateTaskTime() {
