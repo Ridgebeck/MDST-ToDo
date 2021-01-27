@@ -139,10 +139,26 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       width: 1.5,
                     )),
                 child: Center(
-                    child: Text(
-                  "Hier geht's los ➡",
-                  style: TextStyle(color: Colors.white, fontSize: 20.0),
-                  textAlign: TextAlign.center,
+                    child: Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: FittedBox(
+                    child: Column(
+                      children: [
+                        Text(
+                          "Hier ",
+                          style: TextStyle(color: Colors.white, fontSize: 50.0),
+                        ),
+                        Text(
+                          "geht's",
+                          style: TextStyle(color: Colors.white, fontSize: 50.0),
+                        ),
+                        Text(
+                          "los ➡",
+                          style: TextStyle(color: Colors.white, fontSize: 50.0),
+                        ),
+                      ],
+                    ),
+                  ),
                 )),
               ),
             ),
