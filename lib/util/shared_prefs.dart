@@ -72,10 +72,6 @@ class SharedPrefs {
           break;
       }
 
-      // List<String> stringList = finished
-      //     ? sharedPrefs.getStringList('finishedTaskList')
-      //     : sharedPrefs.getStringList('activeTaskList');
-
       if (stringList != null) {
         for (String entry in stringList) {
           // decode Strings into json maps
@@ -90,6 +86,9 @@ class SharedPrefs {
           jsonMap['lastStartTime'] == null
               ? task.lastStartTime = null
               : task.lastStartTime = DateTime.parse(jsonMap['lastStartTime']);
+          jsonMap['finishedTime'] == null
+              ? task.finishedTime = null
+              : task.finishedTime = DateTime.parse(jsonMap['finishedTime']);
           task.isActive = jsonMap['isActive'];
           task.isDone = jsonMap['isDone'];
           // add Task object to temp list

@@ -160,6 +160,7 @@ class TaskData extends ChangeNotifier {
         'originalStartTime':
             task.originalStartTime == null ? null : task.originalStartTime.toIso8601String(),
         'lastStartTime': task.lastStartTime == null ? null : task.lastStartTime.toIso8601String(),
+        'finishedTime': task.finishedTime == null ? null : task.finishedTime.toIso8601String(),
         'isActive': task.isActive,
         'isDone': task.isDone,
       };

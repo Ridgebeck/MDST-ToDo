@@ -6,12 +6,29 @@ import '../util/task_data.dart';
 import '../widgets/circular_indicator.dart';
 import '../widgets/analytics_textbox.dart';
 import '../widgets/analytics_column_box.dart';
+//import 'package:cloud_firestore/cloud_firestore.dart';
 
 const Color kCardColor = Color(0xCCEEEEEE);
 
 class AnalyticsScreen extends StatelessWidget {
+  //final _firestore = FirebaseFirestore.instance;
+
+  // void getData() async {
+  //   final data = await _firestore.collection('daily_community_stats').get();
+  //   for (var doc in data.docs) {
+  //     print(doc.data);
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
+    // _firestore.collection('daily_community_stats').add({
+    //   'active_tasks': 9999,
+    //   'finished_tasks': 9999,
+    //   'total_duration_min': 9999,
+    // });
+    //getData();
+
     return Consumer<TaskData>(builder: (context, taskData, child) {
       return Column(
         children: [
