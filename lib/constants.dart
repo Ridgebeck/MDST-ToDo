@@ -44,6 +44,7 @@ const String slideMessage = 'swipe 👉 wenn feddich';
 const String playMessage = 'drück ▶ um zu starten \n swipe 👈 zum 🗑';
 
 enum listType { active, finished, archived }
+enum entryType { category, activity }
 
 const kStatsTitleStyle = TextStyle(
   fontSize: 24.0,

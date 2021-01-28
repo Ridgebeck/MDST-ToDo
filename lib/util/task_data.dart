@@ -275,7 +275,7 @@ class TaskData extends ChangeNotifier {
     return _archivedTasks.length;
   }
 
-  Map<String, int> get totalTime {
+  Map<String, int> get myTotalTimeToday {
     Duration sumDuration = Duration(minutes: 0);
     for (Task task in _activeTasks) {
       sumDuration += task.totalTime;
@@ -288,7 +288,55 @@ class TaskData extends ChangeNotifier {
     return {'hours': hours, 'minutes': minutes};
   }
 
-  Map<String, Duration> get topCategory {
+  Map<String, int> get communityTotalTimeToday {
+    int hours = 257;
+    int minutes = 35;
+    return {'hours': hours, 'minutes': minutes};
+  }
+
+  Map<String, List<dynamic>> loadTopCommunityEntries(int howMany, entryType type) {
+    // TODO: replace with aggregated data from firestore
+    Map<String, Duration> communityCategories = {
+      '🏠': Duration(hours: 25),
+      '🚿': Duration(hours: 110),
+      '💡': Duration(hours: 215),
+      '🔌': Duration(hours: 52),
+      '🪑': Duration(hours: 225),
+      '💻': Duration(hours: 456),
+      '🚗': Duration(hours: 212),
+    };
+    Map<String, Duration> communityActivities = {
+      '🛠': Duration(hours: 525),
+      '🧹': Duration(hours: 210),
+      '✂': Duration(hours: 115),
+      '🆕': Duration(hours: 152),
+      '💰': Duration(hours: 125),
+      '🎨': Duration(hours: 256),
+      '🛒': Duration(hours: 112),
+    };
+
+    // choose which map to use
+    Map<String, Duration> entryMap =
+        type == entryType.activity ? communityActivities : communityCategories;
+    // limit max length of return list
+    howMany = howMany > entryMap.length ? entryMap.length : howMany;
+    // sort Map via LinkedHashMap
+    var sortedKeys = entryMap.keys.toList(growable: false)
+      ..sort((k1, k2) => entryMap[k1].compareTo(entryMap[k2]));
+    LinkedHashMap entryMapSorted =
+        new LinkedHashMap.fromIterable(sortedKeys, key: (k) => k, value: (k) => entryMap[k]);
+    // return list of lists with top results
+    List<dynamic> topKeys = entryMapSorted.keys
+        .toList()
+        .reversed
+        .toList()
+        .sublist(0, howMany); //categoriesLength - howMany, categoriesLength);
+    List<dynamic> topValues = entryMapSorted.values.toList().reversed.toList().sublist(0, howMany);
+
+    return {'topEmojis': topKeys, 'topDuration': topValues};
+  }
+
+  Map<String, Duration> get topPersonalCategory {
     // create map with category emoji and time
     Map<String, Duration> categoryDuration = {};
     if (_activeTasks.length == 0 && _finishedTasks.length == 0) {
@@ -320,7 +368,7 @@ class TaskData extends ChangeNotifier {
     }
   }
 
-  Map<String, Duration> get topActivity {
+  Map<String, Duration> get topPersonalActivity {
     // create map with category emoji and time
     Map<String, Duration> activityDuration = {};
     if (_activeTasks.length == 0 && _finishedTasks.length == 0) {
