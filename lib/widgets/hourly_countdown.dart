@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../util/task_data.dart';
 import '../util/timers.dart';
 
 class HourlyCountdown extends StatelessWidget {

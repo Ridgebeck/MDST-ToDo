@@ -54,7 +54,6 @@ class AnalyticsScreen extends StatelessWidget {
                               trackColor: kKliemannBlau,
                               activeColor: kKliemannBlau,
                               onChanged: (newValue) {
-                                var list = taskData.loadTopCommunityEntries(3, entryType.activity);
                                 taskData.setCommunitySwitch(newValue);
                               },
                             ),
