@@ -7,8 +7,7 @@ import 'package:flutter/services.dart';
 import 'util/task_data.dart';
 import 'util/timers.dart';
 import 'util/shared_prefs.dart';
-//import 'package:firebase_core/firebase_core.dart';
-//import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +17,7 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   // Create the initialization Future outside of `build`:
-  //final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +28,11 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => TaskData()),
+        ChangeNotifierProvider(create: (_) {
+          TaskData taskData = TaskData();
+          taskData.firebaseDataStream();
+          return taskData;
+        }),
         ChangeNotifierProvider(create: (_) => MDSTTimer()),
       ],
       //child:

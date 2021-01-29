@@ -5,6 +5,7 @@ import 'task.dart';
 import 'dart:collection';
 import '../constants.dart';
 import 'shared_prefs.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TaskData extends ChangeNotifier {
   bool _inReorder = false;
@@ -428,5 +429,29 @@ class TaskData extends ChangeNotifier {
   void setCommunitySwitch(bool value) {
     _communitySwitch = value;
     notifyListeners();
+  }
+
+  void firebaseDataStream() {
+    final _firestore = FirebaseFirestore.instance;
+    DateTime now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
+    _firestore
+        .collection('daily community stats')
+        .where('date', isEqualTo: today)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.docs.length > 1) {
+        print('Error - more than one document found!');
+      } else {
+        var data = snapshot.docs.last.data();
+        print(snapshot.docs.last.data());
+        // _communityActiveTasksToday = data['active tasks'];
+        // _communityFinishedTasksToday = data['finished tasks'];
+        // int totalMinutes = data['total minutes'];
+        // _communityTotalHours = (totalMinutes / 60).round();
+        // _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
+        // notifyListeners();
+      }
+    });
   }
 }
