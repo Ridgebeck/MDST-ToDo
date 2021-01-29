@@ -11,24 +11,8 @@ import '../widgets/analytics_column_box.dart';
 const Color kCardColor = Color(0xCCEEEEEE);
 
 class AnalyticsScreen extends StatelessWidget {
-  //final _firestore = FirebaseFirestore.instance;
-
-  // void getData() async {
-  //   final data = await _firestore.collection('daily_community_stats').get();
-  //   for (var doc in data.docs) {
-  //     print(doc.data);
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // _firestore.collection('daily_community_stats').add({
-    //   'active_tasks': 9999,
-    //   'finished_tasks': 9999,
-    //   'total_duration_min': 9999,
-    // });
-    //getData();
-
     return Consumer<TaskData>(builder: (context, taskData, child) {
       return Column(
         children: [
@@ -36,11 +20,6 @@ class AnalyticsScreen extends StatelessWidget {
           Expanded(
             flex: 4,
             child: Container(
-              // decoration: BoxDecoration(
-              //   color: kCardColor,
-              //   borderRadius: BorderRadius.circular(15.0),
-              // ),
-              height: 0.0,
               child: Center(
                 child: Column(
                   children: [
@@ -71,6 +50,8 @@ class AnalyticsScreen extends StatelessWidget {
                               trackColor: kKliemannBlau,
                               activeColor: kKliemannBlau,
                               onChanged: (newValue) {
+                                print('upload data');
+                                taskData.uploadToFireBase();
                                 taskData.setCommunitySwitch(newValue);
                               },
                             ),

@@ -492,11 +492,77 @@ class TaskData extends ChangeNotifier {
         _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
         _topCommunityCategories = data['top categories'];
         _topCommunityActivities = data['top activities'];
-
-        print(_topCommunityCategories[0]['emoji']);
+        //print(_topCommunityCategories[0]['emoji']);
 
         notifyListeners();
       }
+    });
+  }
+
+  void uploadToFireBase() {
+    final _firestore = FirebaseFirestore.instance;
+
+    Map<String, int> timePerCategory = {};
+    Map<String, int> timePerActivity = {};
+    List<dynamic> activeTaskList = [];
+    int myTotalMinutesToday = myTotalTimeToday['hours'] * 60 + myTotalTimeToday['minutes'];
+
+    for (Task task in _activeTasks) {
+      timePerCategory.containsKey(task.category)
+          ? timePerCategory[task.category] += task.totalTime.inMinutes
+          : timePerCategory[task.category] = task.totalTime.inMinutes;
+      timePerActivity.containsKey(task.activity)
+          ? timePerActivity[task.activity] += task.totalTime.inMinutes
+          : timePerActivity[task.activity] = task.totalTime.inMinutes;
+
+      activeTaskList.add({
+        'category': task.category,
+        'activity': task.activity,
+        'subtitle': task.subtitle,
+        'infoText': task.infoText,
+        'totalTime in minutes': task.totalTime.inMinutes,
+        'originalStartTime': task.originalStartTime,
+        'lastStartTime': task.lastStartTime,
+        'finishedTime': task.finishedTime,
+        'isActive': task.isActive,
+        'isActive': task.isActive,
+        'isDone': task.isDone,
+      });
+    }
+    List<dynamic> finishedTaskList = [];
+    for (Task task in _finishedTasks) {
+      timePerCategory.containsKey(task.category)
+          ? timePerCategory[task.category] += task.totalTime.inMinutes ?? 0
+          : timePerCategory[task.category] = task.totalTime.inMinutes ?? 0;
+      timePerActivity.containsKey(task.activity)
+          ? timePerActivity[task.activity] += task.totalTime.inMinutes ?? 0
+          : timePerActivity[task.activity] = task.totalTime.inMinutes ?? 0;
+
+      finishedTaskList.add({
+        'category': task.category,
+        'activity': task.activity,
+        'subtitle': task.subtitle,
+        'infoText': task.infoText,
+        'totalTime in minutes': task.totalTime.inMinutes,
+        'originalStartTime': task.originalStartTime,
+        'lastStartTime': task.lastStartTime,
+        'finishedTime': task.finishedTime,
+        'isActive': task.isActive,
+        'isActive': task.isActive,
+        'isDone': task.isDone,
+      });
+    }
+
+    _firestore.collection('data per user').doc('test').set({
+      'last updated': DateTime.now(),
+      'active task list': activeTaskList,
+      'finished task list': finishedTaskList,
+      'finished tasks': finishedTasksLength,
+      'active tasks': activeTasksLength,
+      'archived tasks': archivedTasksLength,
+      'timePerCategory': timePerCategory,
+      'timePerActivity': timePerActivity,
+      'total time in minutes': myTotalMinutesToday,
     });
   }
 }

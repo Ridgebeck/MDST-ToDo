@@ -44,7 +44,7 @@ class _LayoutFrameState extends State<LayoutFrame> {
     return Consumer2<TaskData, MDSTTimer>(builder: (context, taskData, mdstTimer, child) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         taskData.updateTaskTime();
-        taskData.archiveOldTasks();
+        //taskData.archiveOldTasks();
       });
 
       return Stack(
