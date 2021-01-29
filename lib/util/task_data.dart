@@ -14,6 +14,11 @@ class TaskData extends ChangeNotifier {
   List<Task> _finishedTasks = sharedPrefs.initTaskListFromLocal(listType.finished);
   List<Task> _archivedTasks = sharedPrefs.initTaskListFromLocal(listType.archived);
 
+  int _communityActiveTasksToday = 0;
+  int _communityFinishedTasksToday = 0;
+  int _communityTotalHours = 0;
+  int _communityTotalMinutes = 0;
+
   void archiveOldTasks() {
     DateTime now = DateTime.now();
     DateTime dateToday = DateTime(
@@ -418,12 +423,37 @@ class TaskData extends ChangeNotifier {
     }
   }
 
+  double get communityRatioDone {
+    if (_communityFinishedTasksToday + _communityActiveTasksToday == 0) {
+      return 0;
+    } else {
+      return _communityFinishedTasksToday /
+          (_communityFinishedTasksToday + _communityActiveTasksToday);
+    }
+  }
+
   bool get inReorder {
     return _inReorder;
   }
 
   bool get communitySwitch {
     return _communitySwitch;
+  }
+
+  int get communityActiveTasksToday {
+    return _communityActiveTasksToday;
+  }
+
+  int get communityFinishedTasksToday {
+    return _communityFinishedTasksToday;
+  }
+
+  int get communityTotalHours {
+    return _communityTotalHours;
+  }
+
+  int get communityTotalMinutes {
+    return _communityTotalMinutes;
   }
 
   void setCommunitySwitch(bool value) {
@@ -445,12 +475,12 @@ class TaskData extends ChangeNotifier {
       } else {
         var data = snapshot.docs.last.data();
         print(snapshot.docs.last.data());
-        // _communityActiveTasksToday = data['active tasks'];
-        // _communityFinishedTasksToday = data['finished tasks'];
-        // int totalMinutes = data['total minutes'];
-        // _communityTotalHours = (totalMinutes / 60).round();
-        // _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
-        // notifyListeners();
+        _communityActiveTasksToday = data['active tasks'];
+        _communityFinishedTasksToday = data['finished tasks'];
+        int totalMinutes = data['total minutes'];
+        _communityTotalHours = (totalMinutes / 60).round();
+        _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
+        notifyListeners();
       }
     });
   }

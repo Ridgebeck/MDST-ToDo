@@ -106,9 +106,9 @@ class AnalyticsScreen extends StatelessWidget {
                 Expanded(
                   child: taskData.communitySwitch
                       ? CircularIndicator(
-                          activeTasksLength: 2540,
-                          finishedTasksLength: 1835,
-                          ratioDone: 1835 / (2540 + 1835),
+                          activeTasksLength: taskData.communityActiveTasksToday,
+                          finishedTasksLength: taskData.communityFinishedTasksToday,
+                          ratioDone: taskData.communityRatioDone, //1835 / (2540 + 1835),
                         )
                       : CircularIndicator(
                           activeTasksLength: taskData.activeTasksLength,
@@ -123,8 +123,8 @@ class AnalyticsScreen extends StatelessWidget {
                     subtitleText: [
                       Text(
                         taskData.communitySwitch
-                            ? '${taskData.communityTotalTimeToday['hours']} Stunden und '
-                            : '${taskData.myTotalTimeToday['hours']} Stunden und ',
+                            ? '${taskData.communityTotalHours} Stunden und '
+                            : '${taskData.communityTotalMinutes} Stunden und ',
                         style: kStatsSubtitleStyle,
                       ),
                       Text(
