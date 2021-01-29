@@ -18,6 +18,8 @@ class TaskData extends ChangeNotifier {
   int _communityFinishedTasksToday = 0;
   int _communityTotalHours = 0;
   int _communityTotalMinutes = 0;
+  List<dynamic> _topCommunityCategories;
+  List<dynamic> _topCommunityActivities;
 
   void archiveOldTasks() {
     DateTime now = DateTime.now();
@@ -456,6 +458,14 @@ class TaskData extends ChangeNotifier {
     return _communityTotalMinutes;
   }
 
+  List<dynamic> get topCommunityCategories {
+    return _topCommunityCategories;
+  }
+
+  List<dynamic> get topCommunityActivities {
+    return _topCommunityActivities;
+  }
+
   void setCommunitySwitch(bool value) {
     _communitySwitch = value;
     notifyListeners();
@@ -480,6 +490,11 @@ class TaskData extends ChangeNotifier {
         int totalMinutes = data['total minutes'];
         _communityTotalHours = (totalMinutes / 60).round();
         _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
+        _topCommunityCategories = data['top categories'];
+        _topCommunityActivities = data['top activities'];
+
+        print(_topCommunityCategories[0]['emoji']);
+
         notifyListeners();
       }
     });

@@ -13,6 +13,10 @@ class AnalyticsColumnBox extends StatelessWidget {
     List<dynamic> topEmojis = top3Entries['topEmojis'];
     List<dynamic> topDuration = top3Entries['topDuration'];
 
+    List topEntries = type == entryType.category
+        ? taskData.topCommunityCategories
+        : taskData.topCommunityActivities;
+
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -44,7 +48,7 @@ class AnalyticsColumnBox extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
                         child: FittedBox(
                             child: Text(
-                          '${topEmojis[0]}  ${topDuration[0].inHours} Stunden',
+                          '${topEntries[0]['emoji']}  ${(topEntries[0]['minutes'] / 60).round()} Stunden',
                           style: TextStyle(fontSize: 18.0, color: kKliemannGrau),
                         )),
                       ),
@@ -54,7 +58,7 @@ class AnalyticsColumnBox extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
                         child: FittedBox(
                             child: Text(
-                          '${topEmojis[1]}  ${topDuration[1].inHours} Stunden',
+                          '${topEntries[1]['emoji']}  ${(topEntries[1]['minutes'] / 60).round()} Stunden',
                           style: TextStyle(fontSize: 18.0, color: kKliemannGrau),
                         )),
                       ),
@@ -64,7 +68,7 @@ class AnalyticsColumnBox extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
                         child: FittedBox(
                             child: Text(
-                          '${topEmojis[2]}  ${topDuration[2].inHours} Stunden',
+                          '${topEntries[2]['emoji']}  ${(topEntries[2]['minutes'] / 60).round()} Stunden',
                           style: TextStyle(fontSize: 18.0, color: kKliemannGrau),
                         )),
                       ),
