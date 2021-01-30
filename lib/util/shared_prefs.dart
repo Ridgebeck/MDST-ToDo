@@ -53,6 +53,29 @@ class SharedPrefs {
     }
   }
 
+  bool initDataHasChanged() {
+    try {
+      return _sharedPrefs.getString('_dataHasChanged') == 'true' ? true : false;
+    } catch (e) {
+      print(e);
+      // return true if no value was found
+      return true;
+    }
+  }
+
+  DateTime initLastTimeUploaded() {
+    print('INIT LAST TIME');
+    try {
+      return DateTime.parse(_sharedPrefs.getString('_lastTimeUploaded'));
+    } catch (e) {
+      print('shared_prefs.initLastTimeUploaded() error: $e');
+      // if no previous value can be found
+      // return yesterday to trigger uploading
+      DateTime now = DateTime.now();
+      return DateTime(now.year, now.month, now.day - 1);
+    }
+  }
+
   List<Task> initTaskListFromLocal(listType type) {
     List<Task> tempTaskList = [];
     // for debug resetting
@@ -62,13 +85,13 @@ class SharedPrefs {
       List<String> stringList = [];
       switch (type) {
         case listType.active:
-          stringList = sharedPrefs.getStringList('activeTaskList');
+          stringList = _sharedPrefs.getStringList('activeTaskList');
           break;
         case listType.finished:
-          stringList = sharedPrefs.getStringList('finishedTaskList');
+          stringList = _sharedPrefs.getStringList('finishedTaskList');
           break;
         case listType.archived:
-          stringList = sharedPrefs.getStringList('archivedTaskList');
+          stringList = _sharedPrefs.getStringList('archivedTaskList');
           break;
       }
 
@@ -98,7 +121,7 @@ class SharedPrefs {
     } catch (e) {
       print(e);
     }
-    print('task list length: ${tempTaskList.length}');
+    print('$type list length: ${tempTaskList.length}');
     return tempTaskList;
   }
 }

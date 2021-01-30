@@ -14,12 +14,54 @@ class TaskData extends ChangeNotifier {
   List<Task> _finishedTasks = sharedPrefs.initTaskListFromLocal(listType.finished);
   List<Task> _archivedTasks = sharedPrefs.initTaskListFromLocal(listType.archived);
 
+  bool _dataHasChanged = sharedPrefs.initDataHasChanged();
+  DateTime _lastTimeUploaded = sharedPrefs.initLastTimeUploaded();
+
   int _communityActiveTasksToday = 0;
   int _communityFinishedTasksToday = 0;
   int _communityTotalHours = 0;
   int _communityTotalMinutes = 0;
   List<dynamic> _topCommunityCategories;
   List<dynamic> _topCommunityActivities;
+
+  void setDataHasChanged(bool value) {
+    _dataHasChanged = value;
+    // save boolean to local memory
+    try {
+      sharedPrefs.setString('_dataHasChanged', value.toString());
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void setLastTimeUploaded(DateTime dateTime) {
+    _lastTimeUploaded = dateTime;
+    // save boolean to local memory
+    try {
+      sharedPrefs.setString('_lastTimeUploaded', dateTime.toIso8601String());
+      print('saved last time to local memory');
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void uploadData() {
+    print('data has changed: $_dataHasChanged');
+    print('last time uploaded: $_lastTimeUploaded');
+
+    Duration timeSinceLastUpload = DateTime.now().difference(_lastTimeUploaded);
+    print('DIFFERENCE: ${timeSinceLastUpload.inMinutes}');
+    // only upload every 10 minutes
+    if (timeSinceLastUpload.inMinutes >= 10) {
+      // only upload if anything has changed
+      if (_dataHasChanged == true) {
+        print('Data has changed. Uploading data...');
+
+        setLastTimeUploaded(DateTime.now());
+        setDataHasChanged(false);
+      }
+    }
+  }
 
   void archiveOldTasks() {
     DateTime now = DateTime.now();
@@ -30,7 +72,6 @@ class TaskData extends ChangeNotifier {
       //now.hour,
       //now.minute,
     );
-    print(dateToday);
 
     List<Task> toRemove = [];
     for (Task task in _finishedTasks) {
@@ -44,17 +85,15 @@ class TaskData extends ChangeNotifier {
         //task.finishedTime.minute,
       );
       if (taskFinishedDay.isBefore(dateToday)) {
-        // TODO: archive old tasks
-        print('ARCHIVING!');
         // add task to a remove list
         toRemove.add(task);
       }
     }
     // move all tasks which are on the remove list
     for (Task task in toRemove) {
+      print('ARCHIVING!');
       moveToArchivedList(task);
     }
-    print('Archived List length: ${archivedTasks.length}');
   }
 
   void updateTaskTime() {
@@ -128,6 +167,7 @@ class TaskData extends ChangeNotifier {
     _activeTasks.remove(task);
     saveTaskListToLocal(listType.finished);
     saveTaskListToLocal(listType.active);
+    setDataHasChanged(true);
     notifyListeners();
   }
 
@@ -136,6 +176,7 @@ class TaskData extends ChangeNotifier {
     _finishedTasks.remove(task);
     saveTaskListToLocal(listType.finished);
     saveTaskListToLocal(listType.archived);
+    setDataHasChanged(true);
     notifyListeners();
   }
 
@@ -203,6 +244,7 @@ class TaskData extends ChangeNotifier {
 
     _activeTasks.add(task);
     saveTaskListToLocal(listType.active);
+    setDataHasChanged(true);
     notifyListeners();
   }
 
@@ -221,18 +263,21 @@ class TaskData extends ChangeNotifier {
     task.isActive = !task.isActive;
     // save active tasks to local
     saveTaskListToLocal(listType.active);
+    setDataHasChanged(true);
     notifyListeners();
   }
 
   void removeActiveTask(Task task) {
     _activeTasks.remove(task);
     saveTaskListToLocal(listType.active);
+    setDataHasChanged(true);
     notifyListeners();
   }
 
   void removeFinishedTask(Task task) {
     _finishedTasks.remove(task);
     saveTaskListToLocal(listType.finished);
+    setDataHasChanged(true);
     notifyListeners();
   }
 
@@ -303,47 +348,47 @@ class TaskData extends ChangeNotifier {
     return {'hours': hours, 'minutes': minutes};
   }
 
-  Map<String, List<dynamic>> loadTopCommunityEntries(int howMany, entryType type) {
-    // TODO: replace with aggregated data from firestore
-    Map<String, Duration> communityCategories = {
-      '🏠': Duration(hours: 25),
-      '🚿': Duration(hours: 110),
-      '💡': Duration(hours: 215),
-      '🔌': Duration(hours: 52),
-      '🪑': Duration(hours: 225),
-      '💻': Duration(hours: 456),
-      '🚗': Duration(hours: 212),
-    };
-    Map<String, Duration> communityActivities = {
-      '🛠': Duration(hours: 525),
-      '🧹': Duration(hours: 210),
-      '✂': Duration(hours: 115),
-      '🆕': Duration(hours: 152),
-      '💰': Duration(hours: 125),
-      '🎨': Duration(hours: 256),
-      '🛒': Duration(hours: 112),
-    };
-
-    // choose which map to use
-    Map<String, Duration> entryMap =
-        type == entryType.activity ? communityActivities : communityCategories;
-    // limit max length of return list
-    howMany = howMany > entryMap.length ? entryMap.length : howMany;
-    // sort Map via LinkedHashMap
-    var sortedKeys = entryMap.keys.toList(growable: false)
-      ..sort((k1, k2) => entryMap[k1].compareTo(entryMap[k2]));
-    LinkedHashMap entryMapSorted =
-        new LinkedHashMap.fromIterable(sortedKeys, key: (k) => k, value: (k) => entryMap[k]);
-    // return list of lists with top results
-    List<dynamic> topKeys = entryMapSorted.keys
-        .toList()
-        .reversed
-        .toList()
-        .sublist(0, howMany); //categoriesLength - howMany, categoriesLength);
-    List<dynamic> topValues = entryMapSorted.values.toList().reversed.toList().sublist(0, howMany);
-
-    return {'topEmojis': topKeys, 'topDuration': topValues};
-  }
+  // Map<String, List<dynamic>> loadTopCommunityEntries(int howMany, entryType type) {
+  //   // TODO: replace with aggregated data from firestore
+  //   Map<String, Duration> communityCategories = {
+  //     '🏠': Duration(hours: 25),
+  //     '🚿': Duration(hours: 110),
+  //     '💡': Duration(hours: 215),
+  //     '🔌': Duration(hours: 52),
+  //     '🪑': Duration(hours: 225),
+  //     '💻': Duration(hours: 456),
+  //     '🚗': Duration(hours: 212),
+  //   };
+  //   Map<String, Duration> communityActivities = {
+  //     '🛠': Duration(hours: 525),
+  //     '🧹': Duration(hours: 210),
+  //     '✂': Duration(hours: 115),
+  //     '🆕': Duration(hours: 152),
+  //     '💰': Duration(hours: 125),
+  //     '🎨': Duration(hours: 256),
+  //     '🛒': Duration(hours: 112),
+  //   };
+  //
+  //   // choose which map to use
+  //   Map<String, Duration> entryMap =
+  //       type == entryType.activity ? communityActivities : communityCategories;
+  //   // limit max length of return list
+  //   howMany = howMany > entryMap.length ? entryMap.length : howMany;
+  //   // sort Map via LinkedHashMap
+  //   var sortedKeys = entryMap.keys.toList(growable: false)
+  //     ..sort((k1, k2) => entryMap[k1].compareTo(entryMap[k2]));
+  //   LinkedHashMap entryMapSorted =
+  //       new LinkedHashMap.fromIterable(sortedKeys, key: (k) => k, value: (k) => entryMap[k]);
+  //   // return list of lists with top results
+  //   List<dynamic> topKeys = entryMapSorted.keys
+  //       .toList()
+  //       .reversed
+  //       .toList()
+  //       .sublist(0, howMany); //categoriesLength - howMany, categoriesLength);
+  //   List<dynamic> topValues = entryMapSorted.values.toList().reversed.toList().sublist(0, howMany);
+  //
+  //   return {'topEmojis': topKeys, 'topDuration': topValues};
+  // }
 
   Map<String, Duration> get topPersonalCategory {
     // create map with category emoji and time
@@ -480,21 +525,29 @@ class TaskData extends ChangeNotifier {
         .where('date', isEqualTo: today)
         .snapshots()
         .listen((snapshot) {
-      if (snapshot.docs.length > 1) {
-        print('Error - more than one document found!');
+      if (snapshot.docs == null) {
+        print('No daily snapshot found.');
       } else {
-        var data = snapshot.docs.last.data();
-        print(snapshot.docs.last.data());
-        _communityActiveTasksToday = data['active tasks'];
-        _communityFinishedTasksToday = data['finished tasks'];
-        int totalMinutes = data['total minutes'];
-        _communityTotalHours = (totalMinutes / 60).round();
-        _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
-        _topCommunityCategories = data['top categories'];
-        _topCommunityActivities = data['top activities'];
-        //print(_topCommunityCategories[0]['emoji']);
+        if (snapshot.docs.length != 1) {
+          print('Error - more than one document or no document found!');
+        } else {
+          try {
+            var data = snapshot.docs.last.data();
+            print(snapshot.docs.last.data());
+            _communityActiveTasksToday = data['active tasks'];
+            _communityFinishedTasksToday = data['finished tasks'];
+            int totalMinutes = data['total minutes'];
+            _communityTotalHours = (totalMinutes / 60).round();
+            _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
+            _topCommunityCategories = data['top categories'];
+            _topCommunityActivities = data['top activities'];
+            //print(_topCommunityCategories[0]['emoji']);
+          } catch (e) {
+            print(e);
+          }
 
-        notifyListeners();
+          notifyListeners();
+        }
       }
     });
   }

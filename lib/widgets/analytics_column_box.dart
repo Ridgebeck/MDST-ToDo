@@ -9,9 +9,9 @@ class AnalyticsColumnBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, List<dynamic>> top3Entries = taskData.loadTopCommunityEntries(3, type);
-    List<dynamic> topEmojis = top3Entries['topEmojis'];
-    List<dynamic> topDuration = top3Entries['topDuration'];
+    // Map<String, List<dynamic>> top3Entries = taskData.loadTopCommunityEntries(3, type);
+    // List<dynamic> topEmojis = top3Entries['topEmojis'];
+    // List<dynamic> topDuration = top3Entries['topDuration'];
 
     List topEntries = type == entryType.category
         ? taskData.topCommunityCategories
