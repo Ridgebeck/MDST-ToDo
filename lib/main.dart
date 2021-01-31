@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) {
           TaskData taskData = TaskData();
+          // initialize download stream for community data
           taskData.firebaseDataStream();
           return taskData;
         }),

@@ -67,8 +67,8 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
                 ],
                 assetImageString: 'assets/notasks.gif',
                 subtitleTextList: [
-                  Text('Neee neee neee.', style: kGifTextStyle),
-                  Text('Jetzt aber mal schnell starten!', style: kGifTextStyle),
+                  Text('Dann aber schnell.', style: kGifTextStyle),
+                  Text('MDST ist nur einmal im Jahr', style: kGifTextStyle),
                 ],
                 hasFingers: true,
               )

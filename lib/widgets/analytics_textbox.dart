@@ -41,7 +41,7 @@ class AnalyticsTextBox extends StatelessWidget {
                     fit: BoxFit.contain,
                     child: Text(
                       emoji,
-                      style: TextStyle(fontSize: 50.0),
+                      style: TextStyle(fontSize: 100.0),
                     ),
                   ),
                 ),

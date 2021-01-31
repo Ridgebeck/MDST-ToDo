@@ -1,9 +1,12 @@
+import '../constants.dart';
+import '../util/share.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../layout_frame.dart';
 import '../widgets/count_down.dart';
+import 'package:flutter_circular_text/circular_text.dart';
 
 const kTextColor = Colors.white;
 //final DateTime theDate = DateTime(2021, 2, 7);
@@ -91,6 +94,62 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
             ),
           ),
+        ),
+        Positioned(
+          bottom: 20.0,
+          left: 30.0,
+          width: 90.0,
+          height: 90.0,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(100.0),
+            child: GestureDetector(
+              onTap: () {
+                print('tap');
+                share();
+              },
+              child: Stack(children: [
+                CircularText(
+                  children: [
+                    TextItem(
+                      text: Text(
+                        'Geteiltes Leid'.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 50,
+                          color: Colors.white,
+                        ),
+                      ),
+                      space: 20,
+                      startAngle: -90,
+                      startAngleAlignment: StartAngleAlignment.center,
+                      direction: CircularTextDirection.clockwise,
+                    ),
+                  ],
+                  radius: 150,
+                  position: CircularTextPosition.inside,
+                  backgroundPaint: Paint()..color = kKliemannGrau,
+                ),
+                Center(
+                  child: Icon(
+                    Icons.share_rounded,
+                    color: Colors.white,
+                    size: 40.0,
+                  ),
+                ),
+              ]),
+              // Container(
+              //   decoration:
+              //       BoxDecoration(gradient: LinearGradient(colors: [kKliemannBlau, kKliemannGrau])),
+              //   child: Icon(
+              //     Icons.share_outlined,
+              //     size: 40.0,
+              //     color: Colors.white,
+              //   ),
+              // ),
+            ),
+          ),
+          //Container(
+          //   color: Colors.green,
+          // ),
         ),
         Positioned(
           right: -55.0,

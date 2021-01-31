@@ -39,7 +39,7 @@ class SharedPrefs {
     await _sharedPrefs.clear();
   }
 
-  void remove(listType type) async {
+  void removeTaskList(listType type) async {
     switch (type) {
       case listType.active:
         await _sharedPrefs.remove('activeTaskList');
@@ -64,7 +64,6 @@ class SharedPrefs {
   }
 
   DateTime initLastTimeUploaded() {
-    print('INIT LAST TIME');
     try {
       return DateTime.parse(_sharedPrefs.getString('_lastTimeUploaded'));
     } catch (e) {
@@ -74,6 +73,11 @@ class SharedPrefs {
       DateTime now = DateTime.now();
       return DateTime(now.year, now.month, now.day - 1);
     }
+  }
+
+  Map<String, int> initUploadedCategoryMinutesMap() {
+    //Map<String, dynamic> jsonMap = json.decode(entry);
+    return {};
   }
 
   List<Task> initTaskListFromLocal(listType type) {
@@ -98,6 +102,7 @@ class SharedPrefs {
       if (stringList != null) {
         for (String entry in stringList) {
           // decode Strings into json maps
+          // TODO: error handling
           Map<String, dynamic> jsonMap = json.decode(entry);
           // create a Task object from data
           Task task = Task(category: jsonMap['category'], activity: jsonMap['activity']);

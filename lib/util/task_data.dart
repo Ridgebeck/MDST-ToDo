@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:core';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'task.dart';
 import 'dart:collection';
 import '../constants.dart';
 import 'shared_prefs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TaskData extends ChangeNotifier {
   bool _inReorder = false;
@@ -17,12 +19,25 @@ class TaskData extends ChangeNotifier {
   bool _dataHasChanged = sharedPrefs.initDataHasChanged();
   DateTime _lastTimeUploaded = sharedPrefs.initLastTimeUploaded();
 
+  bool _communityDataReceived = false;
   int _communityActiveTasksToday = 0;
   int _communityFinishedTasksToday = 0;
   int _communityTotalHours = 0;
   int _communityTotalMinutes = 0;
-  List<dynamic> _topCommunityCategories;
-  List<dynamic> _topCommunityActivities;
+  List<dynamic> _topCommunityCategories = []; // TODO: REMOVE
+  List<dynamic> _topCommunityActivities = []; // TODO: REMOVE
+
+  int _uploadedTotalMinutes = sharedPrefs.getInt('_uploadedTotalMinutes') ?? 0;
+  int _uploadedActiveTasks = sharedPrefs.getInt('_uploadedActiveTasks') ?? 0;
+  int _uploadedFinishedTasks = sharedPrefs.getInt('_uploadedFinishedTasks') ?? 0;
+  Map<String, dynamic> _uploadedCategoryMinutesMap =
+      sharedPrefs.getString('_uploadedCategoryMinutesMap') == null
+          ? {}
+          : json.decode(sharedPrefs.getString('_uploadedCategoryMinutesMap'));
+  Map<String, dynamic> _uploadedActivityMinutesMap =
+      sharedPrefs.getString('_uploadedActivityMinutesMap') == null
+          ? {}
+          : json.decode(sharedPrefs.getString('_uploadedActivityMinutesMap'));
 
   void setDataHasChanged(bool value) {
     _dataHasChanged = value;
@@ -34,7 +49,7 @@ class TaskData extends ChangeNotifier {
     }
   }
 
-  void setLastTimeUploaded(DateTime dateTime) {
+  void saveLastTimeUploaded(DateTime dateTime) {
     _lastTimeUploaded = dateTime;
     // save boolean to local memory
     try {
@@ -45,19 +60,70 @@ class TaskData extends ChangeNotifier {
     }
   }
 
-  void uploadData() {
+  void resetAllDailyData() {
+    _uploadedTotalMinutes = 0;
+    _uploadedActiveTasks = 0;
+    _uploadedFinishedTasks = 0;
+    _uploadedCategoryMinutesMap = {};
+    _uploadedActivityMinutesMap = {};
+    saveUploadedDataLocally();
+  }
+
+  void saveUploadedDataLocally() {
+    try {
+      sharedPrefs.setInt('_uploadedTotalMinutes', _uploadedTotalMinutes);
+      sharedPrefs.setInt('_uploadedActiveTasks', _uploadedActiveTasks);
+      sharedPrefs.setInt('_uploadedFinishedTasks', _uploadedFinishedTasks);
+      sharedPrefs.setString(
+          '_uploadedCategoryMinutesMap', json.encode(_uploadedCategoryMinutesMap));
+      sharedPrefs.setString(
+          '_uploadedActivityMinutesMap', json.encode(_uploadedActivityMinutesMap));
+
+      print('saved uploaded data to local memory');
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void uploadData() async {
     print('data has changed: $_dataHasChanged');
     print('last time uploaded: $_lastTimeUploaded');
 
     Duration timeSinceLastUpload = DateTime.now().difference(_lastTimeUploaded);
     print('DIFFERENCE: ${timeSinceLastUpload.inMinutes}');
     // only upload every 10 minutes
-    if (timeSinceLastUpload.inMinutes >= 10) {
+    if (timeSinceLastUpload.inMinutes >= 1) {
       // only upload if anything has changed
       if (_dataHasChanged == true) {
         print('Data has changed. Uploading data...');
+        uploadUserData();
 
-        setLastTimeUploaded(DateTime.now());
+        // check if last upload was before today
+        DateTime dayOfLastUpload = DateTime(
+          _lastTimeUploaded.year,
+          _lastTimeUploaded.month,
+          _lastTimeUploaded.day,
+        );
+        DateTime now = DateTime.now();
+        DateTime dayRightNow = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        );
+        if (dayOfLastUpload.isBefore(dayRightNow)) {
+          // reset all memorized data
+          //resetAllDailyData();
+          // TODO: handle data that gets accumulated over multiple days
+
+          // change stream to data of new day
+          firebaseDataStream();
+        }
+        uploadAggregatedData();
+
+        print('CATEGORY MINUTES: $_uploadedCategoryMinutesMap');
+        print('ACTIVITY MINUTES: $_uploadedActivityMinutesMap');
+
+        saveLastTimeUploaded(DateTime.now());
         setDataHasChanged(false);
       }
     }
@@ -103,6 +169,7 @@ class TaskData extends ChangeNotifier {
         DateTime now = DateTime.now();
         task.totalTime += now.difference(task.lastStartTime);
         task.lastStartTime = now;
+        setDataHasChanged(true);
       }
     }
   }
@@ -182,7 +249,7 @@ class TaskData extends ChangeNotifier {
 
   void saveTaskListToLocal(listType type) {
     // remove old data
-    sharedPrefs.remove(type);
+    sharedPrefs.removeTaskList(type);
     // define which list to save
     List<Task> taskList = [];
     switch (type) {
@@ -342,116 +409,51 @@ class TaskData extends ChangeNotifier {
     return {'hours': hours, 'minutes': minutes};
   }
 
-  Map<String, int> get communityTotalTimeToday {
-    int hours = 257;
-    int minutes = 35;
-    return {'hours': hours, 'minutes': minutes};
-  }
-
-  // Map<String, List<dynamic>> loadTopCommunityEntries(int howMany, entryType type) {
-  //   // TODO: replace with aggregated data from firestore
-  //   Map<String, Duration> communityCategories = {
-  //     '🏠': Duration(hours: 25),
-  //     '🚿': Duration(hours: 110),
-  //     '💡': Duration(hours: 215),
-  //     '🔌': Duration(hours: 52),
-  //     '🪑': Duration(hours: 225),
-  //     '💻': Duration(hours: 456),
-  //     '🚗': Duration(hours: 212),
-  //   };
-  //   Map<String, Duration> communityActivities = {
-  //     '🛠': Duration(hours: 525),
-  //     '🧹': Duration(hours: 210),
-  //     '✂': Duration(hours: 115),
-  //     '🆕': Duration(hours: 152),
-  //     '💰': Duration(hours: 125),
-  //     '🎨': Duration(hours: 256),
-  //     '🛒': Duration(hours: 112),
-  //   };
-  //
-  //   // choose which map to use
-  //   Map<String, Duration> entryMap =
-  //       type == entryType.activity ? communityActivities : communityCategories;
-  //   // limit max length of return list
-  //   howMany = howMany > entryMap.length ? entryMap.length : howMany;
-  //   // sort Map via LinkedHashMap
-  //   var sortedKeys = entryMap.keys.toList(growable: false)
-  //     ..sort((k1, k2) => entryMap[k1].compareTo(entryMap[k2]));
-  //   LinkedHashMap entryMapSorted =
-  //       new LinkedHashMap.fromIterable(sortedKeys, key: (k) => k, value: (k) => entryMap[k]);
-  //   // return list of lists with top results
-  //   List<dynamic> topKeys = entryMapSorted.keys
-  //       .toList()
-  //       .reversed
-  //       .toList()
-  //       .sublist(0, howMany); //categoriesLength - howMany, categoriesLength);
-  //   List<dynamic> topValues = entryMapSorted.values.toList().reversed.toList().sublist(0, howMany);
-  //
-  //   return {'topEmojis': topKeys, 'topDuration': topValues};
-  // }
-
-  Map<String, Duration> get topPersonalCategory {
+  Map<String, Duration> createEmojiDurationMap(entryType type) {
     // create map with category emoji and time
     Map<String, Duration> categoryDuration = {};
     if (_activeTasks.length == 0 && _finishedTasks.length == 0) {
-      return {'🤷‍♀': Duration(minutes: 0)};
+      if (type == entryType.category) {
+        return {'🤷‍♀': Duration(minutes: 0)};
+      } else {
+        return {'🤷‍♂': Duration(minutes: 0)};
+      }
     } else {
       for (Task task in _activeTasks) {
-        if (categoryDuration.containsKey(task.category)) {
-          categoryDuration[task.category] += task.totalTime;
+        if (categoryDuration
+            .containsKey(type == entryType.category ? task.category : task.activity)) {
+          categoryDuration[type == entryType.category ? task.category : task.activity] +=
+              task.totalTime;
         } else {
-          categoryDuration[task.category] = task.totalTime;
+          categoryDuration[type == entryType.category ? task.category : task.activity] =
+              task.totalTime;
         }
       }
       for (Task task in _finishedTasks) {
-        if (categoryDuration.containsKey(task.category)) {
-          categoryDuration[task.category] += task.totalTime;
+        if (categoryDuration
+            .containsKey(type == entryType.category ? task.category : task.activity)) {
+          categoryDuration[type == entryType.category ? task.category : task.activity] +=
+              task.totalTime;
         } else {
-          categoryDuration[task.category] = task.totalTime;
+          categoryDuration[type == entryType.category ? task.category : task.activity] =
+              task.totalTime;
         }
       }
-      Duration maxDuration = Duration(minutes: 0);
-      String topEmoji;
-      categoryDuration.forEach((emoji, duration) {
-        if (duration >= maxDuration) {
-          topEmoji = emoji;
-          maxDuration = duration;
-        }
-      });
-      return {topEmoji: maxDuration};
+      return categoryDuration;
     }
   }
 
-  Map<String, Duration> get topPersonalActivity {
-    // create map with category emoji and time
-    Map<String, Duration> activityDuration = {};
-    if (_activeTasks.length == 0 && _finishedTasks.length == 0) {
-      return {'🤷‍♂': Duration(minutes: 0)};
-    } else {
-      for (Task task in _activeTasks) {
-        if (activityDuration.containsKey(task.activity)) {
-          activityDuration[task.activity] += task.totalTime;
-        } else {
-          activityDuration[task.activity] = task.totalTime;
-        }
+  Map<String, Duration> topEmojiAndTime(entryType type) {
+    Map<String, Duration> categoryDuration = createEmojiDurationMap(type);
+    Duration maxDuration = Duration(minutes: 0);
+    String topEmoji;
+    categoryDuration.forEach((emoji, duration) {
+      if (duration >= maxDuration) {
+        topEmoji = emoji;
+        maxDuration = duration;
       }
-      for (Task task in _finishedTasks) {
-        if (activityDuration.containsKey(task.activity)) {
-          activityDuration[task.activity] += task.totalTime;
-        } else {
-          activityDuration[task.activity] = task.totalTime;
-        }
-      }
-      Duration maxDuration = Duration(minutes: 0);
-      String topEmoji;
-      activityDuration.forEach((emoji, duration) {
-        if (duration >= maxDuration) {
-          topEmoji = emoji;
-          maxDuration = duration;
-        }
-      });
-      return {topEmoji: maxDuration};
-    }
+    });
+    return {topEmoji: maxDuration};
   }
 
   double get percentageDone {
@@ -511,6 +513,10 @@ class TaskData extends ChangeNotifier {
     return _topCommunityActivities;
   }
 
+  bool get communityDataReceived {
+    return _communityDataReceived;
+  }
+
   void setCommunitySwitch(bool value) {
     _communitySwitch = value;
     notifyListeners();
@@ -521,29 +527,70 @@ class TaskData extends ChangeNotifier {
     DateTime now = DateTime.now();
     DateTime today = DateTime(now.year, now.month, now.day);
     _firestore
-        .collection('daily community stats')
+        .collection('dailyCommunityStats')
         .where('date', isEqualTo: today)
         .snapshots()
         .listen((snapshot) {
       if (snapshot.docs == null) {
         print('No daily snapshot found.');
+        _communityDataReceived = false;
       } else {
         if (snapshot.docs.length != 1) {
           print('Error - more than one document or no document found!');
+          _communityDataReceived = false;
         } else {
           try {
             var data = snapshot.docs.last.data();
             print(snapshot.docs.last.data());
-            _communityActiveTasksToday = data['active tasks'];
-            _communityFinishedTasksToday = data['finished tasks'];
-            int totalMinutes = data['total minutes'];
-            _communityTotalHours = (totalMinutes / 60).round();
+            _communityActiveTasksToday = data['activeTasks'] ?? 0;
+            _communityFinishedTasksToday = data['finishedTasks'] ?? 0;
+            int totalMinutes = data['totalMinutes'] ?? 0;
+            _communityTotalHours = (totalMinutes ~/ 60);
             _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
-            _topCommunityCategories = data['top categories'];
-            _topCommunityActivities = data['top activities'];
+
+            Map<String, dynamic> categoryMinutesUnsorted = data['categoryMinutesMap'] ?? [];
+            Map<String, dynamic> activityMinutesUnsorted = data['activityMinutesMap'] ?? [];
+
+            List<String> sortedCategoryEmojis = categoryMinutesUnsorted.keys.toList(growable: false)
+              ..sort(
+                  (k1, k2) => categoryMinutesUnsorted[k2].compareTo(categoryMinutesUnsorted[k1]));
+
+            List<String> sortedActivityEmojis = activityMinutesUnsorted.keys.toList(growable: false)
+              ..sort(
+                  (k1, k2) => activityMinutesUnsorted[k2].compareTo(activityMinutesUnsorted[k1]));
+
+            List<Map<String, dynamic>> topCategoryList = [];
+            for (String emoji in sortedCategoryEmojis) {
+              Map<String, dynamic> itemMap = {
+                'emoji': emoji,
+                'minutes': categoryMinutesUnsorted[emoji],
+              };
+              topCategoryList.add(itemMap);
+            }
+
+            List<Map<String, dynamic>> topActivityList = [];
+            for (String emoji in sortedActivityEmojis) {
+              Map<String, dynamic> itemMap = {
+                'emoji': emoji,
+                'minutes': activityMinutesUnsorted[emoji],
+              };
+              topActivityList.add(itemMap);
+            }
+
+            // print('TOP ENTRY LIST: ${topCategoryList.sublist(0, 3)}');
+            // print('TOP ACTIVITY LIST: ${topActivityList.sublist(0, 3)}');
+
+            _topCommunityCategories =
+                topCategoryList.sublist(0, min(3, topCategoryList.length)) ?? [];
+            _topCommunityActivities =
+                topActivityList.sublist(0, min(3, topActivityList.length)) ?? [];
+
             //print(_topCommunityCategories[0]['emoji']);
+            _communityDataReceived = true;
           } catch (e) {
+            print('ERROR!');
             print(e);
+            _communityDataReceived = false;
           }
 
           notifyListeners();
@@ -552,13 +599,16 @@ class TaskData extends ChangeNotifier {
     });
   }
 
-  void uploadToFireBase() {
+  void uploadUserData() async {
     final _firestore = FirebaseFirestore.instance;
+    final _auth = FirebaseAuth.instance;
+    UserCredential userCredential = await _auth.signInAnonymously();
+    String uid = userCredential.user.uid;
+    print('USER UID: $uid');
 
     Map<String, int> timePerCategory = {};
     Map<String, int> timePerActivity = {};
     List<dynamic> activeTaskList = [];
-    int myTotalMinutesToday = myTotalTimeToday['hours'] * 60 + myTotalTimeToday['minutes'];
 
     for (Task task in _activeTasks) {
       timePerCategory.containsKey(task.category)
@@ -606,16 +656,108 @@ class TaskData extends ChangeNotifier {
       });
     }
 
-    _firestore.collection('data per user').doc('test').set({
-      'last updated': DateTime.now(),
-      'active task list': activeTaskList,
-      'finished task list': finishedTaskList,
-      'finished tasks': finishedTasksLength,
-      'active tasks': activeTasksLength,
-      'archived tasks': archivedTasksLength,
+    // create document title from current date
+    String docName = createDateDocName();
+    DateTime now = DateTime.now();
+
+    await _firestore.collection('UID').doc(uid).collection('dailyStats').doc(docName).set({
+      'lastUpdated': now,
+      'activeTaskList': activeTaskList,
+      'finishedTaskList': finishedTaskList,
+      'finishedTasks': finishedTasksLength,
+      'activeTasks': activeTasksLength,
+      'archivedTasks': archivedTasksLength,
       'timePerCategory': timePerCategory,
       'timePerActivity': timePerActivity,
-      'total time in minutes': myTotalMinutesToday,
+      'totalTimeInMinutes': myTotalMinutesToday(),
+      'day': DateTime(now.year, now.month, now.day),
     });
+  }
+
+  void uploadAggregatedData() async {
+    final _firestore = FirebaseFirestore.instance;
+    String docName = createDateDocName();
+    DateTime now = DateTime.now();
+
+    Map<String, int> categoryMinutesMap = {};
+    Map<String, int> activityMinutesMap = {};
+
+    //_uploadedCategoryMinutesMap
+
+    // convert Duration values to int values
+    createEmojiDurationMap(entryType.category).forEach((key, value) {
+      if (key != '🤷‍♀') {
+        categoryMinutesMap[key] = value.inMinutes;
+      }
+    });
+    createEmojiDurationMap(entryType.activity).forEach((key, value) {
+      if (key != '🤷‍♂') {
+        activityMinutesMap[key] = value.inMinutes;
+      }
+    });
+
+    Map<String, FieldValue> categoryFieldValueMap = {};
+    Map<String, FieldValue> activityFieldValueMap = {};
+
+    _uploadedCategoryMinutesMap.forEach((emoji, minutes) {
+      if (categoryMinutesMap.containsKey(emoji) == false) {
+        categoryFieldValueMap[emoji] = FieldValue.increment(-minutes);
+        _uploadedCategoryMinutesMap[emoji] = 0;
+      }
+    });
+    _uploadedActivityMinutesMap.forEach((emoji, minutes) {
+      if (activityMinutesMap.containsKey(emoji) == false) {
+        activityFieldValueMap[emoji] = FieldValue.increment(-minutes);
+        _uploadedActivityMinutesMap[emoji] = 0;
+      }
+    });
+
+    categoryMinutesMap.forEach((emoji, minutes) {
+      categoryFieldValueMap[emoji] =
+          FieldValue.increment(minutes - (_uploadedCategoryMinutesMap[emoji] ?? 0));
+      _uploadedCategoryMinutesMap[emoji] = categoryMinutesMap[emoji];
+    });
+
+    activityMinutesMap.forEach((emoji, minutes) {
+      activityFieldValueMap[emoji] =
+          FieldValue.increment(minutes - (_uploadedActivityMinutesMap[emoji] ?? 0));
+      _uploadedActivityMinutesMap[emoji] = activityMinutesMap[emoji];
+    });
+
+    int totalMinutes = myTotalMinutesToday();
+    await _firestore.collection('dailyCommunityStats').doc(docName).set(
+      {
+        'date': DateTime(now.year, now.month, now.day),
+        'totalMinutes': FieldValue.increment(totalMinutes - _uploadedTotalMinutes),
+        'activeTasks': FieldValue.increment(activeTasksLength - _uploadedActiveTasks),
+        'finishedTasks': FieldValue.increment(finishedTasksLength - _uploadedFinishedTasks),
+        'categoryMinutesMap': categoryFieldValueMap,
+        'activityMinutesMap': activityFieldValueMap,
+      },
+      SetOptions(merge: true),
+    );
+
+    _uploadedTotalMinutes = totalMinutes;
+    _uploadedActiveTasks = activeTasksLength;
+    _uploadedFinishedTasks = finishedTasksLength;
+    saveUploadedDataLocally();
+
+    if (communityDataReceived == false) {
+      firebaseDataStream();
+    }
+  }
+
+  String createDateDocName() {
+    DateTime now = DateTime.now();
+    String docName = now.year.toString() +
+        '_' +
+        now.month.toString().padLeft(2, '0') +
+        '_' +
+        now.day.toString().padLeft(2, '0');
+    return docName;
+  }
+
+  int myTotalMinutesToday() {
+    return myTotalTimeToday['hours'] * 60 + myTotalTimeToday['minutes'];
   }
 }
