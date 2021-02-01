@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class TaskData extends ChangeNotifier {
+  bool isMDST = false;
   bool _inReorder = false;
   bool _communitySwitch = false;
   List<Task> _activeTasks = sharedPrefs.initTaskListFromLocal(listType.active);
@@ -18,6 +19,7 @@ class TaskData extends ChangeNotifier {
 
   bool _dataHasChanged = sharedPrefs.initDataHasChanged();
   DateTime _lastTimeUploaded = sharedPrefs.initLastTimeUploaded();
+  DateTime _lastTimerUpdate = DateTime.now();
 
   bool _communityDataReceived = false;
   int _communityActiveTasksToday = 0;
@@ -120,11 +122,16 @@ class TaskData extends ChangeNotifier {
         }
         uploadAggregatedData();
 
-        print('CATEGORY MINUTES: $_uploadedCategoryMinutesMap');
-        print('ACTIVITY MINUTES: $_uploadedActivityMinutesMap');
-
         saveLastTimeUploaded(DateTime.now());
         setDataHasChanged(false);
+      }
+    }
+  }
+
+  void stopActiveTasksAtEnd() {
+    if (DateTime.now().isAfter(DateTime(2021, 2, 8))) {
+      for (Task task in _activeTasks) {
+        task.isActive = false;
       }
     }
   }
@@ -135,8 +142,8 @@ class TaskData extends ChangeNotifier {
       now.year,
       now.month,
       now.day,
-      //now.hour,
-      //now.minute,
+      now.hour,
+      now.minute,
     );
 
     List<Task> toRemove = [];
@@ -150,12 +157,14 @@ class TaskData extends ChangeNotifier {
         //task.finishedTime.hour,
         //task.finishedTime.minute,
       );
+
       if (taskFinishedDay.isBefore(dateToday)) {
         // add task to a remove list
         toRemove.add(task);
       }
     }
-    // move all tasks which are on the remove list
+
+    //move all tasks which are on the remove list
     for (Task task in toRemove) {
       print('ARCHIVING!');
       moveToArchivedList(task);
@@ -170,6 +179,13 @@ class TaskData extends ChangeNotifier {
         task.totalTime += now.difference(task.lastStartTime);
         task.lastStartTime = now;
         setDataHasChanged(true);
+        //print('Update $now');
+
+        if (now.difference(_lastTimerUpdate).inSeconds > 5) {
+          //print('TIME DIFFERENCE: ${now.difference(_lastTimerUpdate)}');
+          _lastTimerUpdate = DateTime.now();
+          notifyListeners();
+        }
       }
     }
   }

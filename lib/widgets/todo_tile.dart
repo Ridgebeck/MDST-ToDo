@@ -31,10 +31,13 @@ class TodoTile extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              leading == null ? Container() : leading,
               Expanded(
+                child: leading == null ? Container() : leading,
+              ),
+              Expanded(
+                flex: 5,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: Column(
                     children: [
                       Row(mainAxisAlignment: MainAxisAlignment.center, children: [

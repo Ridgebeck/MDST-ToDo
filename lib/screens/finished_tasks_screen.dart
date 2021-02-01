@@ -56,7 +56,7 @@ class FinishedTasksScreen extends StatelessWidget {
                           actionPane: const SlidableBehindActionPane(),
                           //actions: finishedTask.isActive ? deleteActions : [],
                           actionExtentRatio: 0.25,
-                          secondaryActions: deleteActions,
+                          //secondaryActions: deleteActions,
                           child: TodoTile(
                             task: finishedTask,
                             leading: Icon(

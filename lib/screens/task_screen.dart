@@ -12,6 +12,7 @@ import 'package:implicitly_animated_reorderable_list/transitions.dart';
 import '../util/task.dart';
 import '../util/task_data.dart';
 import '../constants.dart';
+import '../util/timers.dart';
 
 import 'add_task_screen.dart';
 
@@ -199,7 +200,7 @@ class _TaskScreenState extends State<TaskScreen> with SingleTickerProviderStateM
       actionPane: const SlidableBehindActionPane(),
       actions: task.isActive ? doneActions : [],
       actionExtentRatio: 0.25,
-      secondaryActions: deleteActions,
+      secondaryActions: DateTime.now().isAfter(DateTime(2021, 2, 8)) ? null : deleteActions,
       child: TodoTile(
         task: task,
         leading: PlayButton(task: task, taskData: taskData),
@@ -231,22 +232,110 @@ class PlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipOval(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            taskData.toggleActivity(task);
-          },
-          splashColor: task.isActive ? kActiveColor : kInactiveColor,
-          child: Icon(
-            task.isActive ? Icons.pause : Icons.play_circle_outline,
-            size: kLeadingIconSize,
-            color: task.isActive ? kActiveColor : kInactiveColor,
+    return Consumer<MDSTTimer>(builder: (context, timer, child) {
+      return Column(
+        children: [
+          ClipOval(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  if (timer.minutesRatio == 0) {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: Text(
+                          'Bisschen Geduld',
+                          style: TextStyle(color: kKliemannGrau),
+                        ),
+                        content: Text(
+                          'MDST startet am 7ten Februar',
+                          style: TextStyle(color: kKliemannGrau),
+                        ),
+                        actions: [
+                          FlatButton(
+                            child: Text(
+                              'OK',
+                              style: TextStyle(color: kKliemannGrau),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                        elevation: 20.0,
+                        backgroundColor: kKliemannPink,
+                      ),
+                      barrierDismissible: true,
+                    );
+                  } else if (timer.minutesRatio >= 1) {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: Text(
+                          'Ende Gelände',
+                          style: TextStyle(color: kKliemannGrau),
+                        ),
+                        content: Text(
+                          'Hier gibts keinen Kakao. Zumindest bis nächstes Jahr. See you zum MDST22.',
+                          style: TextStyle(color: kKliemannGrau),
+                        ),
+                        actions: [
+                          FlatButton(
+                            child: Text(
+                              'OK',
+                              style: TextStyle(color: kKliemannGrau),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                        elevation: 20.0,
+                        backgroundColor: kKliemannPink,
+                      ),
+                      barrierDismissible: true,
+                    );
+                  } else {
+                    taskData.toggleActivity(task);
+                  }
+                },
+                splashColor: task.isActive ? kActiveColor : kInactiveColor,
+                child: Icon(
+                  task.isActive ? Icons.pause : Icons.play_circle_outline,
+                  size: kLeadingIconSize,
+                  color: task.isActive ? kActiveColor : kInactiveColor,
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+          SizedBox(height: 5.0),
+          Container(
+            height: 35.0,
+            child: FittedBox(
+              child: Column(
+                children: [
+                  Text(
+                    '${task.totalTime.inMinutes} min',
+                    style: TextStyle(
+                      fontSize: 120.0,
+                      color: task.isActive ? kActiveColor : kInactiveColor,
+                    ),
+                  ),
+                  Text(
+                    '${task.totalTime.inSeconds - task.totalTime.inMinutes * 60} s',
+                    style: TextStyle(
+                      fontSize: 120.0,
+                      color: task.isActive ? kActiveColor : kInactiveColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    });
   }
 }
 

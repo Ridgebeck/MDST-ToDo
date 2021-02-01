@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:MDST_todo/util/task_data.dart';
 import 'package:flutter/material.dart';
 
+// sec timer to 10 seconds
 const kTimerTickRate = 10;
 
 class MDSTTimer extends ChangeNotifier {
@@ -55,7 +56,8 @@ class MDSTTimer extends ChangeNotifier {
       // TODO: Countdown Timer (Welcome Page) during MDST?
       _timeDeltaStart = {'days': 0, 'hours': 0, 'minutes': 0};
       _timeDeltaEnd = getTimeDelta(endDate);
-      _minutesRatio = 1 - (endDate.difference(now).inMinutes / (24 * 60));
+      _minutesRatio = 1 -
+          (endDate.difference(now).inMinutes / ((endDate.difference(now).inDays + 1) * 24 * 60));
     }
     // update UI
     notifyListeners();

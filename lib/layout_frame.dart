@@ -12,12 +12,20 @@ import 'util/task_data.dart';
 import 'util/timers.dart';
 
 class LayoutFrame extends StatefulWidget {
+  LayoutFrame(this.initialIndex);
+  final int initialIndex;
   @override
   _LayoutFrameState createState() => _LayoutFrameState();
 }
 
 class _LayoutFrameState extends State<LayoutFrame> {
-  int _selectedIndex = 1;
+  int _selectedIndex;
+
+  void initState() {
+    _selectedIndex = widget.initialIndex;
+    super.initState();
+  }
+
   static List<Widget> _widgetOptions = [
     WelcomeScreen(),
     TaskScreen(),
@@ -44,7 +52,8 @@ class _LayoutFrameState extends State<LayoutFrame> {
     return Consumer2<TaskData, MDSTTimer>(builder: (context, taskData, mdstTimer, child) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         taskData.updateTaskTime();
-        taskData.archiveOldTasks();
+        //taskData.archiveOldTasks();
+        taskData.stopActiveTasksAtEnd();
         taskData.uploadData();
       });
 
