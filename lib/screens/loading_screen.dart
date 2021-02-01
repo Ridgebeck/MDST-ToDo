@@ -1,12 +1,9 @@
+import 'package:MDST_todo/widgets/gif_page.dart';
 import 'package:flutter/material.dart';
 
 class LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.green,
-      height: 500.0,
-      width: 500.0,
-    );
+    return GifPage(assetImageString: 'assets/loading.gif');
   }
 }

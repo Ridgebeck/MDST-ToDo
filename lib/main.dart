@@ -26,56 +26,63 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
     ]);
 
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) {
-          TaskData taskData = TaskData();
-          // initialize download stream for community data
-          taskData.firebaseDataStream();
-          return taskData;
-        }),
-        ChangeNotifierProvider(create: (_) => MDSTTimer()),
-      ],
-      //child:
-      child: MaterialApp(
-        title: 'MDST_todo',
-        theme: ThemeData(canvasColor: Colors.transparent),
-        debugShowCheckedModeBanner: false,
-        home: WelcomeScreen(),
-      ),
-      //),
-    );
+    return
 
-    //   FutureBuilder(
-    //   // Initialize FlutterFire
-    //   future: _initialization,
-    //   builder: (context, snapshot) {
-    //     // Check for errors
-    //     if (snapshot.hasError) {
-    //       return ErrorScreen();
-    //     }
-    //
-    //     // Once complete, show your application
-    //     if (snapshot.connectionState == ConnectionState.done) {
-    //       return MultiProvider(
-    //         providers: [
-    //           ChangeNotifierProvider(create: (_) => TaskData()),
-    //           ChangeNotifierProvider(create: (_) => MDSTTimer()),
-    //         ],
-    //         //child:
-    //         child: MaterialApp(
-    //           title: 'MDST_todo',
-    //           theme: ThemeData(canvasColor: Colors.transparent),
-    //           debugShowCheckedModeBanner: false,
-    //           home: WelcomeScreen(),
-    //         ),
-    //         //),
-    //       );
-    //     }
-    //
-    //     // Otherwise, show something whilst waiting for initialization to complete
-    //     return LoadingScreen();
-    //   },
-    // );
+        //   MultiProvider(
+        //   providers: [
+        //     ChangeNotifierProvider(create: (_) {
+        //       TaskData taskData = TaskData();
+        //       // initialize download stream for community data
+        //       taskData.firebaseDataStream();
+        //       return taskData;
+        //     }),
+        //     ChangeNotifierProvider(create: (_) => MDSTTimer()),
+        //   ],
+        //   //child:
+        //   child: MaterialApp(
+        //     title: 'MDST_todo',
+        //     theme: ThemeData(canvasColor: Colors.transparent),
+        //     debugShowCheckedModeBanner: false,
+        //     home: WelcomeScreen(),
+        //   ),
+        //   //),
+        // );
+
+        FutureBuilder(
+      // Initialize FlutterFire
+      future: _initialization,
+      builder: (context, snapshot) {
+        // Check for errors
+        if (snapshot.hasError) {
+          return ErrorScreen();
+        }
+
+        // Once complete, show your application
+        if (snapshot.connectionState == ConnectionState.done) {
+          return MultiProvider(
+            providers: [
+              ChangeNotifierProvider(create: (_) {
+                TaskData taskData = TaskData();
+                // initialize download stream for community data
+                taskData.firebaseDataStream();
+                return taskData;
+              }),
+              ChangeNotifierProvider(create: (_) => MDSTTimer()),
+            ],
+            //child:
+            child: MaterialApp(
+              title: 'MDST_todo',
+              theme: ThemeData(canvasColor: Colors.transparent),
+              debugShowCheckedModeBanner: false,
+              home: WelcomeScreen(),
+            ),
+            //),
+          );
+        }
+
+        // Otherwise, show something whilst waiting for initialization to complete
+        return LoadingScreen();
+      },
+    );
   }
 }
