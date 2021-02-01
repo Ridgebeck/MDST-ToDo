@@ -67,7 +67,7 @@ class SharedPrefs {
     try {
       return DateTime.parse(_sharedPrefs.getString('_lastTimeUploaded'));
     } catch (e) {
-      print('shared_prefs.initLastTimeUploaded() error: $e');
+      //print('shared_prefs.initLastTimeUploaded() error: $e');
       // if no previous value can be found
       // return yesterday to trigger uploading
       DateTime now = DateTime.now();
@@ -126,7 +126,7 @@ class SharedPrefs {
     } catch (e) {
       print(e);
     }
-    print('$type list length: ${tempTaskList.length}');
+    //print('$type list length: ${tempTaskList.length}');
     return tempTaskList;
   }
 }

@@ -56,7 +56,7 @@ class TaskData extends ChangeNotifier {
     // save boolean to local memory
     try {
       sharedPrefs.setString('_lastTimeUploaded', dateTime.toIso8601String());
-      print('saved last time to local memory');
+      //print('saved last time to local memory');
     } catch (e) {
       print(e);
     }
@@ -81,23 +81,23 @@ class TaskData extends ChangeNotifier {
       sharedPrefs.setString(
           '_uploadedActivityMinutesMap', json.encode(_uploadedActivityMinutesMap));
 
-      print('saved uploaded data to local memory');
+      //print('saved uploaded data to local memory');
     } catch (e) {
       print(e);
     }
   }
 
   void uploadData() async {
-    print('data has changed: $_dataHasChanged');
-    print('last time uploaded: $_lastTimeUploaded');
+    //print('data has changed: $_dataHasChanged');
+    //print('last time uploaded: $_lastTimeUploaded');
 
     Duration timeSinceLastUpload = DateTime.now().difference(_lastTimeUploaded);
-    print('DIFFERENCE: ${timeSinceLastUpload.inMinutes}');
+    //print('DIFFERENCE: ${timeSinceLastUpload.inMinutes}');
     // only upload every 10 minutes
     if (timeSinceLastUpload.inMinutes >= 1) {
       // only upload if anything has changed
       if (_dataHasChanged == true) {
-        print('Data has changed. Uploading data...');
+        //print('Data has changed. Uploading data...');
         uploadUserData();
 
         // check if last upload was before today
@@ -166,7 +166,7 @@ class TaskData extends ChangeNotifier {
 
     //move all tasks which are on the remove list
     for (Task task in toRemove) {
-      print('ARCHIVING!');
+      //print('ARCHIVING!');
       moveToArchivedList(task);
     }
   }
@@ -548,16 +548,16 @@ class TaskData extends ChangeNotifier {
         .snapshots()
         .listen((snapshot) {
       if (snapshot.docs == null) {
-        print('No daily snapshot found.');
+        //print('No daily snapshot found.');
         _communityDataReceived = false;
       } else {
         if (snapshot.docs.length != 1) {
-          print('Error - more than one document or no document found!');
+          //print('Error - more than one document or no document found!');
           _communityDataReceived = false;
         } else {
           try {
             var data = snapshot.docs.last.data();
-            print(snapshot.docs.last.data());
+            //print(snapshot.docs.last.data());
             _communityActiveTasksToday = data['activeTasks'] ?? 0;
             _communityFinishedTasksToday = data['finishedTasks'] ?? 0;
             int totalMinutes = data['totalMinutes'] ?? 0;
@@ -604,7 +604,7 @@ class TaskData extends ChangeNotifier {
             //print(_topCommunityCategories[0]['emoji']);
             _communityDataReceived = true;
           } catch (e) {
-            print('ERROR!');
+            //('ERROR!');
             print(e);
             _communityDataReceived = false;
           }
@@ -620,7 +620,7 @@ class TaskData extends ChangeNotifier {
     final _auth = FirebaseAuth.instance;
     UserCredential userCredential = await _auth.signInAnonymously();
     String uid = userCredential.user.uid;
-    print('USER UID: $uid');
+    //print('USER UID: $uid');
 
     Map<String, int> timePerCategory = {};
     Map<String, int> timePerActivity = {};

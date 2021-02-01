@@ -96,10 +96,10 @@ class AnalyticsScreen extends StatelessWidget {
                               style: TextStyle(fontSize: 50.0),
                             )
                           ],
-                          assetImageString: 'assets/motivation.gif',
+                          assetImageString: 'assets/no_connection.gif',
                           subtitleTextList: [
                             Text(
-                              'Keine Verbindung...',
+                              'WLAN Kabel kaputt? 💔',
                               style: TextStyle(fontSize: 50.0),
                             )
                           ],
