@@ -15,7 +15,7 @@ class AnalyticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<TaskData>(builder: (context, taskData, child) {
-      return DateTime.now().isBefore(DateTime(2021, 2, 7))
+      return DateTime.now().isBefore(DateTime.parse(mdstStart))
           ? GifPage(
               assetImageString: 'assets/no_data.gif',
               titleTextList: [Text('Noch keine Daten', style: kGifTextStyle)],

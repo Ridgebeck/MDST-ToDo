@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:MDST_todo/util/task_data.dart';
 import 'package:flutter/material.dart';
+import '../constants.dart';
 
 // sec timer to 10 seconds
 const kTimerTickRate = 10;
@@ -13,8 +14,8 @@ class MDSTTimer extends ChangeNotifier {
     _startTimer(kTimerTickRate);
   }
   TaskData taskData;
-  final DateTime startDate = DateTime(2021, 2, 7);
-  final DateTime endDate = DateTime(2021, 2, 8);
+  final DateTime startDate = DateTime.parse(mdstStart);
+  final DateTime endDate = DateTime.parse(mdstEnd);
   // DateTime _currentTasksDate = DateTime(
   //   DateTime.now().year,
   //   DateTime.now().month,

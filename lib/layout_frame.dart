@@ -54,7 +54,8 @@ class _LayoutFrameState extends State<LayoutFrame> {
         taskData.updateTaskTime();
         //taskData.archiveOldTasks();
         taskData.stopActiveTasksAtEnd();
-        taskData.uploadData();
+        taskData.uploadData(kUploadFrequencyMin);
+        taskData.getCommunityData(kDownloadFrequencyMin);
       });
 
       return Stack(
@@ -111,7 +112,20 @@ class _LayoutFrameState extends State<LayoutFrame> {
                 unselectedItemColor: Colors.white,
                 selectedItemColor: kKliemannGelb,
                 currentIndex: _selectedIndex,
-                onTap: _onItemTapped,
+                onTap: (int index) {
+                  // move to fullscreen welcome page
+                  if (index == 0) {
+                    Navigator.push(
+                        context, MaterialPageRoute(builder: (context) => WelcomeScreen()));
+                  }
+                  // otherwise open page as tab
+                  else {
+                    taskData.setPageIndex(index);
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                  }
+                },
                 items: [
                   BottomNavigationBarItem(
                     icon: Icon(Icons.home),

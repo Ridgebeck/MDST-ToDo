@@ -17,7 +17,7 @@ class AnalyticsColumnBox extends StatelessWidget {
         ? taskData.topCommunityCategories
         : taskData.topCommunityActivities;
 
-    print('TOP ENTRIES: $topEntries, is empty: ${topEntries.isEmpty}');
+    //print('TOP ENTRIES: $topEntries, is empty: ${topEntries.isEmpty}');
 
     return Padding(
       padding: const EdgeInsets.all(10.0),

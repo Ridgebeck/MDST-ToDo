@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) {
           TaskData taskData = TaskData();
           // initialize download stream for community data
-          taskData.firebaseDataStream();
+          //taskData.firebaseDataStream();
           return taskData;
         }),
         ChangeNotifierProvider(create: (_) => MDSTTimer()),

@@ -10,6 +10,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class TaskData extends ChangeNotifier {
+  int _pageIndex = 3;
+  bool _newAppStart = true;
+  bool _dataInitialized = sharedPrefs.initDataInitialized();
   bool isMDST = false;
   bool _inReorder = false;
   bool _communitySwitch = false;
@@ -19,9 +22,11 @@ class TaskData extends ChangeNotifier {
 
   bool _dataHasChanged = sharedPrefs.initDataHasChanged();
   DateTime _lastTimeUploaded = sharedPrefs.initLastTimeUploaded();
+  DateTime _lastTimeDownloaded = sharedPrefs.initLastTimeDownloaded();
   DateTime _lastTimerUpdate = DateTime.now();
 
   bool _communityDataReceived = false;
+  bool _communityDataStale = true;
   int _communityActiveTasksToday = 0;
   int _communityFinishedTasksToday = 0;
   int _communityTotalHours = 0;
@@ -62,6 +67,17 @@ class TaskData extends ChangeNotifier {
     }
   }
 
+  void saveLastTimeDownloaded(DateTime dateTime) {
+    _lastTimeDownloaded = dateTime;
+    // save boolean to local memory
+    try {
+      sharedPrefs.setString('_lastTimeDownloaded', dateTime.toIso8601String());
+      //print('saved last time to local memory');
+    } catch (e) {
+      print(e);
+    }
+  }
+
   void resetAllDailyData() {
     _uploadedTotalMinutes = 0;
     _uploadedActiveTasks = 0;
@@ -87,49 +103,60 @@ class TaskData extends ChangeNotifier {
     }
   }
 
-  void uploadData() async {
-    //print('data has changed: $_dataHasChanged');
+  void uploadData(int minutes) async {
+    DateTime now = DateTime.now();
+    Duration timeSinceLastUpload = now.difference(_lastTimeUploaded);
+
+    print('data has changed: $_dataHasChanged');
     //print('last time uploaded: $_lastTimeUploaded');
+    print('DIFFERENCE: ${timeSinceLastUpload.inMinutes}');
+    print('Data initialized: $_dataInitialized');
 
-    Duration timeSinceLastUpload = DateTime.now().difference(_lastTimeUploaded);
-    //print('DIFFERENCE: ${timeSinceLastUpload.inMinutes}');
-    // only upload every 10 minutes
-    if (timeSinceLastUpload.inMinutes >= 1) {
-      // only upload if anything has changed
-      if (_dataHasChanged == true) {
-        //print('Data has changed. Uploading data...');
-        uploadUserData();
+    // only upload data during MDST
+    if (now.isAfter(DateTime.parse(mdstStart)) && now.isBefore(DateTime.parse(mdstEnd))) {
+      // only upload every 10 minutes
+      if (timeSinceLastUpload.inMinutes >= minutes) {
+        // only upload if anything has changed or first time on MDST
+        if (_dataHasChanged == true || _dataInitialized == false) {
+          //print('Data has changed. Uploading data...');
+          uploadUserData();
 
-        // check if last upload was before today
-        DateTime dayOfLastUpload = DateTime(
-          _lastTimeUploaded.year,
-          _lastTimeUploaded.month,
-          _lastTimeUploaded.day,
-        );
-        DateTime now = DateTime.now();
-        DateTime dayRightNow = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        );
-        if (dayOfLastUpload.isBefore(dayRightNow)) {
-          // reset all memorized data
-          //resetAllDailyData();
-          // TODO: handle data that gets accumulated over multiple days
+          // // check if last upload was before today
+          // DateTime dayOfLastUpload = DateTime(
+          //   _lastTimeUploaded.year,
+          //   _lastTimeUploaded.month,
+          //   _lastTimeUploaded.day,
+          // );
+          // DateTime dayRightNow = DateTime(
+          //   now.year,
+          //   now.month,
+          //   now.day,
+          // );
+          // if (dayOfLastUpload.isBefore(dayRightNow)) {
+          //   // reset all memorized data
+          //   //resetAllDailyData();
+          //   // TODO: handle data that gets accumulated over multiple days
+          //
+          //   // change stream to data of new day
+          //   //firebaseDataStream();
+          // }
 
-          // change stream to data of new day
-          firebaseDataStream();
+          uploadAggregatedData();
+
+          saveLastTimeUploaded(DateTime.now());
+          setDataHasChanged(false);
+
+          if (_dataInitialized == false) {
+            _dataInitialized = true;
+            sharedPrefs.setString('_dataInitialized', 'true');
+          }
         }
-        uploadAggregatedData();
-
-        saveLastTimeUploaded(DateTime.now());
-        setDataHasChanged(false);
       }
     }
   }
 
   void stopActiveTasksAtEnd() {
-    if (DateTime.now().isAfter(DateTime(2021, 2, 8))) {
+    if (DateTime.now().isAfter(DateTime.parse(mdstEnd))) {
       for (Task task in _activeTasks) {
         task.isActive = false;
       }
@@ -196,6 +223,7 @@ class TaskData extends ChangeNotifier {
     '💡',
     '🔌',
     '🪑',
+    '👕',
     '💻',
     '🚗',
     '🚲',
@@ -212,7 +240,8 @@ class TaskData extends ChangeNotifier {
     '🛠',
     '🧹',
     '✂',
-    '🆕',
+    '🗑',
+    '🩹',
     '💰',
     '🎨',
     '🛒',
@@ -400,6 +429,10 @@ class TaskData extends ChangeNotifier {
   //   return UnmodifiableListView(_activityEmojis);
   // }
 
+  void setPageIndex(int index) {
+    _pageIndex = index;
+  }
+
   int get activeTasksLength {
     return _activeTasks.length;
   }
@@ -538,81 +571,102 @@ class TaskData extends ChangeNotifier {
     notifyListeners();
   }
 
-  void firebaseDataStream() {
-    final _firestore = FirebaseFirestore.instance;
+  void getCommunityData(int minutes) {
     DateTime now = DateTime.now();
-    DateTime today = DateTime(now.year, now.month, now.day);
-    _firestore
-        .collection('dailyCommunityStats')
-        .where('date', isEqualTo: today)
-        .snapshots()
-        .listen((snapshot) {
-      if (snapshot.docs == null) {
-        //print('No daily snapshot found.');
-        _communityDataReceived = false;
-      } else {
-        if (snapshot.docs.length != 1) {
-          //print('Error - more than one document or no document found!');
-          _communityDataReceived = false;
-        } else {
-          try {
-            var data = snapshot.docs.last.data();
-            //print(snapshot.docs.last.data());
-            _communityActiveTasksToday = data['activeTasks'] ?? 0;
-            _communityFinishedTasksToday = data['finishedTasks'] ?? 0;
-            int totalMinutes = data['totalMinutes'] ?? 0;
-            _communityTotalHours = (totalMinutes ~/ 60);
-            _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
+    Duration timeSinceLastDownload = now.difference(_lastTimeDownloaded);
 
-            Map<String, dynamic> categoryMinutesUnsorted = data['categoryMinutesMap'] ?? [];
-            Map<String, dynamic> activityMinutesUnsorted = data['activityMinutesMap'] ?? [];
+    print('last time downloaded: $_lastTimeDownloaded');
+    print('DOWNLOAD DIFFERENCE: ${timeSinceLastDownload.inMinutes}');
+    print('page index: $_pageIndex');
 
-            List<String> sortedCategoryEmojis = categoryMinutesUnsorted.keys.toList(growable: false)
-              ..sort(
-                  (k1, k2) => categoryMinutesUnsorted[k2].compareTo(categoryMinutesUnsorted[k1]));
-
-            List<String> sortedActivityEmojis = activityMinutesUnsorted.keys.toList(growable: false)
-              ..sort(
-                  (k1, k2) => activityMinutesUnsorted[k2].compareTo(activityMinutesUnsorted[k1]));
-
-            List<Map<String, dynamic>> topCategoryList = [];
-            for (String emoji in sortedCategoryEmojis) {
-              Map<String, dynamic> itemMap = {
-                'emoji': emoji,
-                'minutes': categoryMinutesUnsorted[emoji],
-              };
-              topCategoryList.add(itemMap);
-            }
-
-            List<Map<String, dynamic>> topActivityList = [];
-            for (String emoji in sortedActivityEmojis) {
-              Map<String, dynamic> itemMap = {
-                'emoji': emoji,
-                'minutes': activityMinutesUnsorted[emoji],
-              };
-              topActivityList.add(itemMap);
-            }
-
-            // print('TOP ENTRY LIST: ${topCategoryList.sublist(0, 3)}');
-            // print('TOP ACTIVITY LIST: ${topActivityList.sublist(0, 3)}');
-
-            _topCommunityCategories =
-                topCategoryList.sublist(0, min(3, topCategoryList.length)) ?? [];
-            _topCommunityActivities =
-                topActivityList.sublist(0, min(3, topActivityList.length)) ?? [];
-
-            //print(_topCommunityCategories[0]['emoji']);
-            _communityDataReceived = true;
-          } catch (e) {
-            //('ERROR!');
-            print(e);
-            _communityDataReceived = false;
-          }
-
-          notifyListeners();
-        }
+    // only download data during MDST
+    if (now.isAfter(DateTime.parse(mdstStart))) {
+      // reduce frequency after MDST
+      if (now.isAfter(DateTime.parse(mdstEnd))) {
+        minutes = 120;
       }
-    });
+      // only download every x minutes
+      if ((timeSinceLastDownload.inMinutes >= minutes && _pageIndex == 3) || _newAppStart) {
+        _newAppStart = false;
+        final _firestore = FirebaseFirestore.instance;
+        DateTime mdstDay = DateTime.parse(mdstStart);
+        _firestore
+            .collection('dailyCommunityStats')
+            .where('date', isEqualTo: mdstDay)
+            .get()
+            .then((querySnapshot) {
+          if (querySnapshot.docs == null) {
+            //print('No daily snapshot found.');
+            _communityDataReceived = false;
+          } else {
+            if (querySnapshot.docs.length != 1) {
+              //print('Error - more than one document or no document found!');
+              _communityDataReceived = false;
+            } else {
+              try {
+                var data = querySnapshot.docs.last.data();
+
+                print('DATA: ${querySnapshot.docs.last.data()}');
+                print('METADATA is from cache: ${querySnapshot.metadata.isFromCache}');
+
+                _communityActiveTasksToday = data['activeTasks'] ?? 0;
+                _communityFinishedTasksToday = data['finishedTasks'] ?? 0;
+                int totalMinutes = data['totalMinutes'] ?? 0;
+                _communityTotalHours = (totalMinutes ~/ 60);
+                _communityTotalMinutes = totalMinutes - _communityTotalHours * 60;
+
+                Map<String, dynamic> categoryMinutesUnsorted = data['categoryMinutesMap'] ?? [];
+                Map<String, dynamic> activityMinutesUnsorted = data['activityMinutesMap'] ?? [];
+
+                List<String> sortedCategoryEmojis = categoryMinutesUnsorted.keys
+                    .toList(growable: false)
+                      ..sort((k1, k2) =>
+                          categoryMinutesUnsorted[k2].compareTo(categoryMinutesUnsorted[k1]));
+
+                List<String> sortedActivityEmojis = activityMinutesUnsorted.keys
+                    .toList(growable: false)
+                      ..sort((k1, k2) =>
+                          activityMinutesUnsorted[k2].compareTo(activityMinutesUnsorted[k1]));
+
+                List<Map<String, dynamic>> topCategoryList = [];
+                for (String emoji in sortedCategoryEmojis) {
+                  Map<String, dynamic> itemMap = {
+                    'emoji': emoji,
+                    'minutes': categoryMinutesUnsorted[emoji],
+                  };
+                  topCategoryList.add(itemMap);
+                }
+
+                List<Map<String, dynamic>> topActivityList = [];
+                for (String emoji in sortedActivityEmojis) {
+                  Map<String, dynamic> itemMap = {
+                    'emoji': emoji,
+                    'minutes': activityMinutesUnsorted[emoji],
+                  };
+                  topActivityList.add(itemMap);
+                }
+
+                _topCommunityCategories =
+                    topCategoryList.sublist(0, min(3, topCategoryList.length)) ?? [];
+                _topCommunityActivities =
+                    topActivityList.sublist(0, min(3, topActivityList.length)) ?? [];
+
+                //print(_topCommunityCategories[0]['emoji']);
+                _communityDataReceived = true;
+                _communityDataStale = querySnapshot.metadata.isFromCache;
+                saveLastTimeDownloaded(DateTime.now());
+              } catch (e) {
+                print('FIRESTORE ERROR!');
+                print(e);
+                _communityDataReceived = false;
+              }
+
+              notifyListeners();
+            }
+          }
+        });
+      }
+    }
   }
 
   void uploadUserData() async {
@@ -620,7 +674,6 @@ class TaskData extends ChangeNotifier {
     final _auth = FirebaseAuth.instance;
     UserCredential userCredential = await _auth.signInAnonymously();
     String uid = userCredential.user.uid;
-    //print('USER UID: $uid');
 
     Map<String, int> timePerCategory = {};
     Map<String, int> timePerActivity = {};
@@ -741,6 +794,7 @@ class TaskData extends ChangeNotifier {
     });
 
     int totalMinutes = myTotalMinutesToday();
+
     await _firestore.collection('dailyCommunityStats').doc(docName).set(
       {
         'date': DateTime(now.year, now.month, now.day),
@@ -758,9 +812,9 @@ class TaskData extends ChangeNotifier {
     _uploadedFinishedTasks = finishedTasksLength;
     saveUploadedDataLocally();
 
-    if (communityDataReceived == false) {
-      firebaseDataStream();
-    }
+    // if (communityDataReceived == false) {
+    //   firebaseDataStream();
+    // }
   }
 
   String createDateDocName() {

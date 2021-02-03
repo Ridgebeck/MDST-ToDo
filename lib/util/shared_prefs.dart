@@ -63,9 +63,31 @@ class SharedPrefs {
     }
   }
 
+  bool initDataInitialized() {
+    try {
+      return _sharedPrefs.getString('_dataInitialized') == 'true' ? true : false;
+    } catch (e) {
+      print(e);
+      // return false if no value was found
+      return false;
+    }
+  }
+
   DateTime initLastTimeUploaded() {
     try {
       return DateTime.parse(_sharedPrefs.getString('_lastTimeUploaded'));
+    } catch (e) {
+      //print('shared_prefs.initLastTimeUploaded() error: $e');
+      // if no previous value can be found
+      // return yesterday to trigger uploading
+      DateTime now = DateTime.now();
+      return DateTime(now.year, now.month, now.day - 1);
+    }
+  }
+
+  DateTime initLastTimeDownloaded() {
+    try {
+      return DateTime.parse(_sharedPrefs.getString('_lastTimeDownloaded'));
     } catch (e) {
       //print('shared_prefs.initLastTimeUploaded() error: $e');
       // if no previous value can be found

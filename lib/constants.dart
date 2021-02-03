@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
+const String mdstStart = '2021-02-07 00:00:00.000';
+const String mdstEnd = '2021-02-08 00:00:00.000';
+const int kUploadFrequencyMin = 5;
+const int kDownloadFrequencyMin = 5;
+
 const Color kKliemannPink = Color.fromRGBO(231, 178, 171, 1.0);
-//const Color kKliemannGelb = Color.fromRGBO(251, 188, 51, 1.0);
 const Color kKliemannGelb = Color.fromRGBO(234, 180, 92, 1.0);
 const Color kKliemannBlau = Color.fromRGBO(98, 130, 147, 1.0);
 const Color kKliemannGrau = Color.fromRGBO(44, 58, 66, 1.0);
